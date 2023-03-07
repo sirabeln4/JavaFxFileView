@@ -1,0 +1,704 @@
+      
+/*
+      ******************************************************************
+      * GW24093 ADD ITEM-SQNC TO ITOR ITAL ITSC ITWT ITND ITFE AND ITTX
+      *         QBP511-KITM-TYPE= 10   20   30   40   50   60       70
+      ******************************************************************
+      * IVSZS COPYCOB TEXT QBP511CC INV FORMAT FILE                    *
+      * 01/05/10  OMMEN     ADDED ORIG UPC TO ITEM AND ITEX
+      * 09/28/10  ABLES     ADDED KNVC-TYPE '80' AND '85' FOR
+      *                     WAREHOUSE AND RETAIL LICENSE NUMBERS
+      * 03/11/11  GARCIA    MOVED QBP511-KNVB-REF-DESC TO
+      *                     QBP511-KITM-REF-DESC AND INCREASED THE SIZE
+      *                     OF THE FIELD TO 15 BYTES.
+      * 02/27/12  GARCIA    ADDED KNVC-TYPE '20' FOR CONTACT INFO
+      * 03/07/12  R.WOOD    INCREASED THE FACL FIELDS TO 2 BYTES.
+      * 10/08/14  G.FROMMER INCREASED THE KTTX-LOCATION TO PIC X(6)
+      *                     (PRJ10420)
+      * 01/04/17 JCHRISTENSEN PRJTASK0088310 ADDED ITEM BRAND FOR TAXES 
+      *                       REDUCED PALT FROM 50 CHARS TO 30 CHARS.
+      * 01/15/18 DXGONZALEZ ADDED NEW FIELDS TO QBP511-ITAL-FIELDS      
+      * 2/7/18 JCHRISTENSEN DEF0015777  ADD SORT BY FIELD FOR INVOICES
+      * 6/1/20 JBRUCE       PT119982    ADD SORT BY FIELD FOR NDC EXCEPT
+      * 10/15/21 NSIRABELLA PRJTASK0134925 ADD NEW BIO ENG FLAG
+      * 11/14/22 DCHURN     ADD EFFICIENCY REBATE TO INVT TOTALS        
+      ******************************************************************
+       01 QBP511-RECORD.
+          05 QBP511-IDENTIFIER.
+      ******************************************************************
+      *      KNVC - INVOICE MASTER (LEVEL 1) KEY FIELDS                *
+      **********************************************************50BYTES*
+             10 QBP511-KNVC-IVNO        PIC  9(07) VALUE 0.
+             10 QBP511-KNVC-IVDT        PIC  9(08) VALUE 0.
+             10 QBP511-KNVC-FWHS.
+                15 QBP511-KNVC-FACL     PIC  X(02) VALUE SPACES.        
+                15 QBP511-KNVC-WHSE     PIC  X(02) VALUE SPACES.        
+             10 QBP511-KNVC-STOR        PIC  9(05) VALUE 0.
+      *         ** POPULATE KNVC-TYPE WITH HIGH-VALUES FOR LOWER-LEVEL
+      *         ** DATA RECORDS (INVOICE BREAKER, ITEM ETC.)
+             10 QBP511-KNVC-TYPE        PIC  X(02) VALUE SPACES.
+      *                                           ( INVOICE MASTER )
+                88 QBP511-KNVC-TYPE-INVC           VALUE '00'.
+      *                                           ( IVM FEES )
+                88 QBP511-KNVC-TYPE-ICNT           VALUE '20'.
+      *                                           ( CONTACT INFO )
+                88 QBP511-KNVC-TYPE-IMFE           VALUE '60'.
+      *                                           ( INVOICE TOTALS )
+                88 QBP511-KNVC-TYPE-IMTF           VALUE '65'.
+      *                                           ( INVOICE TOTAL FEES)
+                88 QBP511-KNVC-TYPE-IMLI           VALUE '80'.
+      *                                           ( LICENSE NUMBERS)
+                88 QBP511-KNVC-TYPE-IMLD           VALUE '85'.
+      *                                           ( LICENSE DESC)
+                88 QBP511-KNVC-TYPE-INVT           VALUE '99'.
+             10 QBP511-KNVC-ROUT        PIC  X(04) VALUE SPACES.
+             10 QBP511-KNVC-STOP        PIC  X(03) VALUE SPACES.
+             10 QBP511-KNVC-DDAT        PIC  9(08) VALUE 0.
+             10 QBP511-KNVC-CPY-CD      PIC  X(05) VALUE SPACES.
+             10 QBP511-KNVC-ROUT-PRC-FL PIC  X(01) VALUE SPACES.
+             10 QBP511-KNVC-CPY-SRT-BY  PIC  X(03) VALUE SPACES.        
+      ******************************************************************
+      *      KNVB - INVOICE BREAKER (LEVEL 2) KEY FIELDS               *
+      * EDDM 7/23/07 ADDED QBP511-KNVB-REF-DESC & QBP511-KNVB-TEXT     *
+      *      TO TRACK USER ON-LINE ACTIVITY FOR GAIN/LOSS REPORTING    *
+      **********************************************************40BYTES*
+             10 QBP511-KNVB-ORNO        PIC  9(05) VALUE 0.
+             10 QBP511-KNVB-INV-BREAK   PIC  X(05) VALUE SPACES.
+             10 QBP511-KNVB-WDPT        PIC  X(02) VALUE SPACES.
+             10 QBP511-KNVB-ORTP        PIC  X(02) VALUE SPACES.
+      *         ** POPULATE KNVB-TYPE WITH HIGH-VALUES FOR LOWER-LEVEL
+      *         ** DATA RECORDS (ITEM, ALLOWANCES, SHIPPERS ETC.)
+             10 QBP511-KNVB-TYPE        PIC  X(02) VALUE SPACES.
+      *                                           ( INVOICE BREAK )
+                88 QBP511-KNVB-TYPE-INVB           VALUE '00'.
+      *                                           ( IVB FEES )
+                88 QBP511-KNVB-TYPE-IBFE           VALUE '60'.
+      *        ( INVOICE BREAK TOTALS FOR 'ROUTE PROCESSED' INVOICES')
+                88 QBP511-KNVB-TYPE-IVBT           VALUE '99'.
+             10 FILLER                  PIC X(08) VALUE SPACES.         
+             10 QBP511-KNVB-ORD-CLASS   PIC X(01) VALUE SPACES.
+      *      10 QBP511-KNVB-REF-DESC    PIC X(09) VALUE SPACES.         
+             10 QBP511-KNVB-TEXT        PIC X(15) VALUE SPACES.
+      *      10 FILLER                  PIC X(24) VALUE SPACES.
+      ******************************************************************
+      *      KITM - INVOICE DETAIL/ITEM (LEVEL 3) KEY FIELDS           *
+      * - INCREASE KITM-RFRNC-CD FROM 9(07) TO X(50) FOR INV REDESIGN
+      * - REMOVED  KITM-PALT FROM KEY AND MOVED TO ITEM/ITEX
+      *********************************************************138BYTES*
+             10 QBP511-KITM-ITEM        PIC  9(07) VALUE 0.
+             10 QBP511-KITM-SUBN        PIC  X(02) VALUE SPACES.
+             10 QBP511-KITM-COMM        PIC  9(05) VALUE 0.
+             10 QBP511-KITM-SUBC        PIC  9(05) VALUE 0.
+             10 QBP511-KITM-PUPC        PIC  X(15) VALUE SPACES.
+             10 FILLER REDEFINES QBP511-KITM-PUPC.
+                15 QBP511-KITM-UPC-PROD PIC  X(01).
+                15 QBP511-KITM-UPC-MANF PIC  X(05).
+                15 QBP511-KITM-UPC-VNDR-ITM PIC X(04).
+                15 QBP511-KITM-UPC-ITEM PIC  X(05).
+             10 QBP511-KITM-SHP-FL      PIC  X     VALUE SPACES.
+             10 QBP511-KITM-ITEM-EX-CD  PIC  X     VALUE SPACE.
+                88 QBP511-KITM-ITEM-REC            VALUE 'I'.
+                88 QBP511-KITM-EXCPT-REC           VALUE 'E'.
+             10 QBP511-KITM-TYPE        PIC  X(02) VALUE SPACES.
+      *                                           ( ITEM / EXCEPTION )
+                88 QBP511-KITM-TYPE-ITEM           VALUE '00'.
+      *                                           ( ORIGINAL ITEM )
+                88 QBP511-KITM-TYPE-ITOR           VALUE '10'.
+      *                                           ( ALLOWANCES )
+                88 QBP511-KITM-TYPE-ITAL           VALUE '20'.
+      *                                           ( SHIPPER COMPONENTS )
+                88 QBP511-KITM-TYPE-ITSC           VALUE '30'.
+      *                                           ( RANDOM WEIGHTS )
+                88 QBP511-KITM-TYPE-ITWT           VALUE '40'.
+      *                                           ( NDC CODES )
+                88 QBP511-KITM-TYPE-ITND           VALUE '50'.
+      *                                           ( ITEM FEES )
+                88 QBP511-KITM-TYPE-ITFE           VALUE '60'.
+      *                                           ( ITEM TAXES )
+                88 QBP511-KITM-TYPE-ITTX           VALUE '70'.
+      *        ( INVOICE BREAK TOTALS FOR 'INVOICE PROCESSED' INVOICES')
+                88 QBP511-KITM-TYPE-IVBT           VALUE '99'.
+             10 QBP511-KITM-RFRNC-CD    PIC  X(50).
+             10 QBP511-KITM-SLOT        PIC  X(06).
+             10 QBP511-KITM-DESC        PIC  X(21).
+             10 QBP511-KITM-REF-DESC    PIC  X(15) VALUE SPACES.        
+             10 QBP511-KITM-EX-NDC-CD   PIC  X     VALUE SPACE.         
+             10 FILLER                  PIC  X(07) VALUE SPACES.        
+      ******************************************************************
+      *      KSUB - SUB-KEY FIELDS (KEY TO SUB-LEVEL DATA RECORDS:     *
+      *             FEES, ALLOWANCES, SHIPPER COMPONENTS, RANDOM       *
+      *             WEIGHTS, NDCS)                                     *
+      **********************************************************30BYTES*
+             10 QBP511-KSUB-KEY         PIC  X(30) VALUE SPACES.
+             10 FILLER REDEFINES QBP511-KSUB-KEY.
+      *                          (KMFE - IVM FEE RECORD KEY)
+                15 QBP511-KMFE-FEE-CODE PIC  X(05).
+                15 QBP511-KMFE-FEE-CUST PIC  X(05).
+                15 FILLER               PIC  X(20).
+             10 FILLER REDEFINES QBP511-KSUB-KEY.
+      *                          (KMTF - TOTAL FEES RECORD KEY)
+                15 QBP511-KMTF-FEE-CODE PIC  X(05).
+                15 FILLER               PIC  X(25).
+             10 FILLER REDEFINES QBP511-KSUB-KEY.
+      *                          (KBFE - IVB FEE RECORD KEY)
+                15 QBP511-KBFE-FEE-CODE PIC  X(05).
+                15 QBP511-KBFE-FEE-CUST PIC  X(05).
+                15 FILLER               PIC  X(20).
+             10 FILLER REDEFINES QBP511-KSUB-KEY.
+      *                          (KTAL - ITEM ALLOWANCE RECORD KEY)
+      *         15 QBP511-KTAL-PROMO-ID PIC  X(03).
+                15 QBP511-KTAL-ABBR     PIC  X(04).
+                15 QBP511-KTAL-TS       PIC  X(26).
+      *         15 FILLER               PIC  X.
+             10 FILLER REDEFINES QBP511-KSUB-KEY.
+      *                          (KTSC - SHIPPER COMPONENT RECORD KEY)
+                15 QBP511-KTSC-CPO-UPC  PIC  X(15).
+                15 QBP511-KTSC-CPO-ITEM PIC  X(07).
+                15 FILLER               PIC  X(08).
+             10 FILLER REDEFINES QBP511-KSUB-KEY.
+      *                          (KTWT - RANDOM WEIGHT RECORD KEY)
+                15 QBP511-KTWT-SEQN     PIC  X(05).
+                15 FILLER               PIC  X(25).
+             10 FILLER REDEFINES QBP511-KSUB-KEY.
+      *                          (KTND - NDC CODE RECORD KEY)
+                15 QBP511-KTND-SEQN     PIC  9(04).
+                15 FILLER               PIC  X(26).
+             10 FILLER REDEFINES QBP511-KSUB-KEY.
+      *                          (KTFE - ITEM FEE RECORD KEY)
+                15 QBP511-KTFE-FEE-CODE PIC  X(05).
+                15 QBP511-KTFE-FEE-CUST PIC  X(05).
+                15 FILLER               PIC  X(20).
+             10 FILLER REDEFINES QBP511-KSUB-KEY.
+      *                          (KTTX - ITEM TAX RECORD KEY)
+                15 QBP511-KTTX-LOCATION PIC  X(06).                     
+                15 QBP511-KTTX-TAX-TYPE PIC  X(03).
+                15 QBP511-KTTX-TAX-CODE PIC  X(03).
+                15 FILLER               PIC  X(18).                     
+      
+      ******************************************************************
+      *                         DATA FIELDS                            *
+      *  CHGED OCCURS FROM 378 TO 478 FOR INV REDESIGN                 *
+      ******************************************************************
+          05 QBP511-DATA.
+             10 QBP511-DATA-LENGTH      PIC 9(04) COMP VALUE   1.
+             10 QBP511-DATA-FIELDS.
+                15 QBP511-DATA-BYTE     PIC X OCCURS 11 TO 478 TIMES
+                                        DEPENDING ON QBP511-DATA-LENGTH.
+      
+      ******************************************************************
+      *      INVC - INVOICE MASTER DATA - LEVEL 1                      *
+      * - ADDED QBP511-INVC-DATA-CORP-NAME FOR INVOICE REDESIGN        *
+      * - ADDED XDOCK-INVC DATA NAMES FOR INV PHASE I CHANGES-121BYTES *
+      *   CHGD DEA-NBR TO STORE-DEA-NBR, ADDED WHSE-DEA-NBR            *
+      *********************************************************467BYTES*
+       01 QBP511-INVC-DATA.
+          05 QBP511-INVC-FIELDS.
+             10 QBP511-INVC-DDAY         PIC  9(01).
+             10 QBP511-INVC-BNAM         PIC  X(30).
+             10 QBP511-INVC-BAD1         PIC  X(30).
+             10 QBP511-INVC-BAD2         PIC  X(30).
+             10 QBP511-INVC-BPHN         PIC  X(20).
+             10 QBP511-INVC-GINA         PIC S9(10)V9(5) COMP-3.
+             10 QBP511-INVC-DIVISION     PIC  X(02).                    
+             10 QBP511-INVC-SERV-FACL    PIC  X(02).                    
+             10 QBP511-INVC-CIGSTAMP     PIC  X(03).
+             10 QBP511-INVC-DFRD-INVC    PIC  X(01).
+             10 QBP511-INVC-EQUITYNBR    PIC S9(04) COMP.
+             10 QBP511-INVC-RP-GROUP     PIC S9(04) COMP.
+             10 QBP511-INVC-VM-XDOCK-IND PIC X(01).
+             10 QBP511-INVC-NAME         PIC  X(27).
+             10 QBP511-INVC-STORE-DEA-NBR PIC  X(10).
+             10 QBP511-INVC-ADDRESS      PIC  X(45).
+             10 QBP511-INVC-CITY         PIC  X(45).
+             10 QBP511-INVC-STATE        PIC  X(02).
+             10 QBP511-INVC-ZIP-CODE     PIC  X(09).
+             10 QBP511-INVC-FEE-GRP      PIC  X(05).
+             10 QBP511-INVC-DEPT-DESC    PIC  X(30).
+             10 QBP511-INVC-TIME         PIC  X(08).
+             10 QBP511-INVC-DATA-CORP-NAME PIC  X(35).
+             10 QBP511-INVC-WHSE-DEA-NBR   PIC  X(10).
+             10 QBP511-INVC-XDOCK-DEA-NBR  PIC  X(10).
+             10 QBP511-INVC-XDOCK-ADDRESS  PIC  X(45).
+             10 QBP511-INVC-XDOCK-CITY     PIC  X(45).
+             10 QBP511-INVC-XDOCK-STATE    PIC  X(02).
+             10 QBP511-INVC-XDOCK-ZIP-CODE PIC  X(09).
+      
+      ******************************************************************
+      *  ICNT - CONTACTS FOR THE WAREHOUSE SHIP FROM ADDRESS LEVEL 1   *
+      *********************************************************164BYTES*
+       01 QBP511-ICNT-DATA.
+          05 QBP511-ICNT-FIELDS.
+             10 QBP511-ICNT-CONTACT      PIC  X(10).
+             10 QBP511-ICNT-ADDRESS      PIC  X(45).
+             10 QBP511-ICNT-CITY         PIC  X(45).
+             10 QBP511-ICNT-STATE        PIC  X(02).
+             10 QBP511-ICNT-ZIP-CODE     PIC  X(09).
+      
+      ******************************************************************
+      *      INFE - INVOICE MASTER FEES - LEVEL 1                      *
+      *             (MULTIPLE RECORDS PER INVOICE)                     *
+      **********************************************************37BYTES*
+       01 QBP511-IMFE-DATA.
+          05 QBP511-IMFE-FIELDS.
+             10 QBP511-IMFE-FEE-AMT      PIC S9(7)V9(5) COMP-3.
+             10 QBP511-IMFE-FEE-PCT      PIC S9(7)V9(2) COMP-3.
+             10 QBP511-IMFE-FEE-DESC     PIC  X(25).
+      
+      ******************************************************************
+      *      IMTF - INVOICE TOTAL FEES  - LEVEL 1                      *
+      *             (MULTIPLE RECORDS PER INVOICE)                     *
+      **********************************************************37BYTES*
+       01 QBP511-IMTF-DATA.
+          05 QBP511-IMTF-FIELDS.
+             10 QBP511-IMTF-FEE-AMT     PIC S9(7)V9(5) COMP-3.
+             10 QBP511-IMTF-FEE-PCT     PIC S9(5)V9(4) COMP-3.
+             10 QBP511-IMTF-FEE-DESC    PIC  X(25).
+      
+      ******************************************************************
+      *      IMLI - LICENSE NUMBERS     - LEVEL 1                      *
+      *********************************************************360BYTES*
+       01 QBP511-IMLI-DATA.
+          05 QBP511-IMLI-FIELDS.
+             10 QBP511-IMLI-WHSE-LICENSE-DATA OCCURS 10 TIMES.
+               15  QBP511-IMLI-WHSE-LICENSE                PIC X(15).
+               15  QBP511-IMLI-WHSE-LICENSE-TYPE           PIC X(03).
+             10 QBP511-IMLI-STR-LICENSE-DATA  OCCURS 10 TIMES.
+               15  QBP511-IMLI-STR-LICENSE                 PIC X(15).
+               15  QBP511-IMLI-STR-LICENSE-TYPE            PIC X(03).
+      ******************************************************************
+      *      IMLD - LICENSE DESC        - LEVEL 1                      *
+      *********************************************************462BYTES*
+       01 QBP511-IMLD-DATA.
+          05 QBP511-IMLD-FIELDS.
+             10 QBP511-IMLD-LICENSE-DESC-DATA OCCURS 14 TIMES.
+               15  QBP511-IMLD-LICENSE-TYPE                PIC X(03).
+               15  QBP511-IMLD-LICENSE-DESC                PIC X(30).
+      ******************************************************************
+      *      INVT - INVOICE TOTALS      - LEVEL 1                      *
+      ******************************************************* 200 BYTES 
+       01 QBP511-INVT-DATA.
+          05 QBP511-INVT-FIELDS.
+             10 QBP511-INVT-ENDING-INVC-NO   PIC S9(7) COMP-3.
+             10 QBP511-INVT-BREAKER          PIC 9(03).
+             10 QBP511-INVT-STMNT-DT         PIC  9(8).
+             10 QBP511-INVT-WEIGHT           PIC S9(5)V99 COMP-3.
+             10 QBP511-INVT-CUBE             PIC S9(6)V9  COMP-3.
+             10 QBP511-INVT-PALLET           PIC S9(3)    COMP-3.
+             10 QBP511-INVT-PIECES           PIC S9(5)    COMP-3.
+             10 QBP511-INVT-ORDERED          PIC S9(5)    COMP-3.
+             10 QBP511-INVT-SHIPPED          PIC S9(5)    COMP-3.
+             10 QBP511-INVT-CIG-PIECES       PIC S9(9)    COMP-3.
+             10 QBP511-INVT-MEAT             PIC S9(11)V99 COMP-3.
+             10 QBP511-INVT-GROCERY          PIC S9(11)V99 COMP-3.
+             10 QBP511-INVT-FROZEN-FOOD      PIC S9(11)V99 COMP-3.
+             10 QBP511-INVT-STORE-SUPPLY     PIC S9(9)V99 COMP-3.
+             10 QBP511-INVT-STRE-SUPP-TAX    PIC S9(5)V99 COMP-3.
+             10 QBP511-INVT-STRE-SUPP-ATCOST PIC S9(5)V99 COMP-3.
+             10 QBP511-INVT-GROSS-PROFITS    PIC S9(11)V99 COMP-3.
+             10 QBP511-INVT-SELL             PIC S9(11)V99 COMP-3.
+             10 QBP511-INVT-COST             PIC S9(11)V99 COMP-3.
+             10 QBP511-INVT-RETAIL           PIC S9(11)V99 COMP-3.
+             10 QBP511-INVT-PROD-COST        PIC S9(11)V99 COMP-3.
+             10 QBP511-INVT-RTL-PRICE        PIC S9(11)V99 COMP-3.
+             10 QBP511-INVT-N-ALLOW          PIC S9(9)V99 COMP-3.
+             10 QBP511-INVT-REG-PROMO        PIC S9(9)V99 COMP-3.
+             10 QBP511-INVT-REG-FRZ-PROMO    PIC S9(9)V99 COMP-3.
+             10 QBP511-INVT-PERF-ALLOW       PIC S9(9)V99 COMP-3.
+             10 QBP511-INVT-OTHER-ALLOW      PIC S9(9)V99 COMP-3.
+             10 QBP511-INVT-FEES             PIC S9(9)V99 COMP-3.
+             10 QBP511-INVT-DLV-FEES         PIC S9(9)V99 COMP-3.
+             10 QBP511-INVT-HANDBILL-FEES    PIC S9(9)V99 COMP-3.
+             10 QBP511-INVT-OTHER-FEES       PIC S9(9)V99 COMP-3.
+             10 QBP511-INVT-PALLET-ALLOW     PIC S9(9)V99 COMP-3.
+             10 QBP511-INVT-TOBACCO-TAX      PIC S9(7)V99 COMP-3.
+             10 QBP511-INVT-TOBACCO-SALES    PIC S9(7)V99 COMP-3.
+             10 QBP511-INVT-OASIS-CLASS      PIC X(01).
+             10 QBP511-INVT-OASIS-FACILITY   PIC X(04).
+             10 QBP511-INVT-DEFERED-INDC     PIC X.
+             10 QBP511-INVT-DIR-DELV-IND     PIC X.
+             10 QBP511-INVT-EFF-REBATE       PIC S9(8)V9(5) COMP-3.     
+      
+      ******************************************************************
+      *      INVB - INVOICE BREAKER     - LEVEL 2                      *
+      * RLSDATE - ADDED RELEASE DATE FOR R101-BILLED-DT.  CHG 126 TO 134
+      *********************************************************134BYTES*
+       01 QBP511-INVB-DATA.
+          05 QBP511-INVB-FIELDS.
+             10 QBP511-INVB-DDAT         PIC  9(08).
+             10 QBP511-INVB-DDAY         PIC  9(01).
+             10 QBP511-INVB-ROUT         PIC  X(04).
+             10 QBP511-INVB-STOP         PIC  X(03).
+             10 QBP511-INVB-SHP-DT       PIC  9(08).
+             10 QBP511-INVB-SHP-TM       PIC  X(08).
+             10 QBP511-INVB-RLS-TM       PIC  X(08).
+             10 QBP511-INVB-ORTP-DESC    PIC  X(45).
+             10 QBP511-INVB-FEE-GRP      PIC  X(05).
+             10 QBP511-INVB-SOURCE       PIC  X.
+             10 QBP511-INVB-SOLD-AT-COST PIC  X.
+             10 QBP511-INVB-WILLCALL     PIC  X.
+             10 QBP511-INVB-HANDBILL     PIC  X.
+             10 QBP511-INVB-DIRECT-DLVRY PIC  X.
+             10 QBP511-INVB-DEPT-DESC    PIC  X(30).
+             10 QBP511-INVB-RLS-DT       PIC  9(08).
+      
+      ******************************************************************
+      *      IBFE - INVOICE BREAKER FEES - LEVEL 2                     *
+      *             (MULTIPLE RECORDS PER INVOICE BREAKER)             *
+      **********************************************************37BYTES*
+       01 QBP511-IBFE-DATA.
+          05 QBP511-IBFE-FIELDS.
+             10 QBP511-IBFE-FEE-AMT     PIC S9(7)V9(5) COMP-3.
+             10 QBP511-IBFE-FEE-PCT     PIC S9(7)V9(2) COMP-3.
+             10 QBP511-IBFE-FEE-DESC    PIC  X(25).
+      
+      ******************************************************************
+      *      INVT - INVOICE BREAK TOTALS - LEVEL 2                     *
+      **********************************************************58BYTES*
+       01 QBP511-IVBT-DATA.
+          05 QBP511-IVBT-FIELDS.
+             10 QBP511-IVBT-DEPT-DESC   PIC X(30).
+             10 QBP511-IVBT-ORDERED     PIC S9(5)     COMP-3.
+             10 QBP511-IVBT-SHIPPED     PIC S9(5)     COMP-3.
+             10 QBP511-IVBT-NET         PIC S9(11)V99 COMP-3.
+             10 QBP511-IVBT-RTL         PIC S9(11)V99 COMP-3.
+             10 QBP511-IVBT-TO-WHS      PIC S9(5)     COMP-3.
+             10 QBP511-IVBT-GROSS-PCT   PIC S9(5)V9(4) COMP-3.
+      
+      ******************************************************************
+      *      ITEM - INVOICE DETAIL (ITEM) - LEVEL 3                    *
+      * - ADDED QBP511-ITEM-PALT  FOR INV REDESIGN
+      * - ADDED QBP511-ITEM-PALT2 FOR INV REDESIGN
+      * - ADDED QBP511-ITEM-OASIS-CLASS FOR SOLO PROJECT     7/13/06
+      * - ADDED QBP511-ITEM-OASIS-FACILITY FOR SOLO PROJECT  7/13/06
+      * - EDDM ADDED QBP511-ITEM-PCT-MKUP                    7/23/07
+      * - REMOVED QBP511-ITEM-PROD-TYPE, QBP511-ITEM-SUB-PR-TYPE
+      *   AND QBP511-ITEM-CIG-CODE - NOT BEING USED.        11/15/06
+      * RLSDATE - ADDED RELEASE DATE FOR R101-BILLED-DT.
+      * 01/05/10  OMMEN     ADDED ORIG UPC TO ITEM AND ITEX
+      * 07/20/10  GARCIA    ADDED ORIG UPC IND AND ALTERNATE-VENDOR TO
+      *                     ITEM. REDUCED FILLER BY 8 BYTES.
+      *********************************************************478BYTES*
+       01 QBP511-ITEM-DATA.
+          05 QBP511-ITEM-FIELDS.
+             10 QBP511-ITEM-SQNC-NBR    PIC S9(07) COMP-3.
+             10 QBP511-ITEM-DEPT-BREAK  PIC  X(05).
+             10 QBP511-ITEM-INV-DEPT    PIC  X(02).
+             10 QBP511-ITEM-RTL-ZONE    PIC  X(04).
+             10 QBP511-ITEM-CNTRY-ORG   PIC  X(30).
+             10 QBP511-ITEM-ORIG-ITEM   PIC  X(07).
+             10 QBP511-ITEM-CMP-ITEM    PIC  X(07).
+             10 QBP511-ITEM-SUBO        PIC  X(07).
+             10 QBP511-ITEM-SUBS        PIC  X(01).
+             10 QBP511-ITEM-DEFR-DT     PIC  9(08).
+             10 QBP511-ITEM-GR-NET-INV  PIC  X(01).
+             10 QBP511-ITEM-PLCD        PIC  X(01).
+             10 QBP511-ITEM-MPCK        PIC S9(07) COMP-3.
+             10 QBP511-ITEM-SPCK        PIC S9(07) COMP-3.
+             10 QBP511-ITEM-SIZE        PIC  X(15).
+             10 QBP511-ITEM-OQTY        PIC S9(05) COMP-3.
+             10 QBP511-ITEM-AQTY        PIC S9(05) COMP-3.
+             10 QBP511-ITEM-SQTY        PIC S9(05) COMP-3.
+             10 QBP511-ITEM-IQTY        PIC S9(05) COMP-3.
+             10 QBP511-ITEM-OADJ        PIC S9(05) COMP-3.
+             10 QBP511-ITEM-PLT-QTY     PIC S9(05) COMP-3.
+             10 QBP511-ITEM-NBR-OF-PLTS PIC S9(05) COMP-3.
+             10 QBP511-ITEM-CASE-QTY    PIC S9(05) COMP-3.
+             10 QBP511-ITEM-DEAL-CNTR   PIC S9(03) COMP-3.
+             10 QBP511-ITEM-SHP-CPO-FL  PIC  X(01).
+             10 QBP511-ITEM-BILL-AVG-FL PIC  X(01).
+             10 QBP511-ITEM-RWI         PIC  X(01).
+                88 QBP511-ITEM-RND-WEIGHTED        VALUE 'C'.
+                88 QBP511-ITEM-AVG-WEIGHTED        VALUE 'I'.
+             10 QBP511-ITEM-IWGT        PIC S9(5)V9(2) COMP-3.
+             10 QBP511-ITEM-CWGT        PIC S9(5)V9(2) COMP-3.
+             10 QBP511-ITEM-CUBE        PIC S9(6)V9(3) COMP-3.
+             10 QBP511-ITEM-SCST        PIC S9(4)V9(5) COMP-3.
+             10 QBP511-ITEM-NET-SELL    PIC S9(5)V9(4) COMP-3.
+             10 QBP511-ITEM-UNT-NET-SELL PIC S9(5)V9(4) COMP-3.
+             10 QBP511-ITEM-RTL-CRET    PIC S9(5)V9(2) COMP-3.
+             10 QBP511-ITEM-RTL-PRICE   PIC S9(7)V9(2) COMP-3.
+             10 QBP511-ITEM-EXT-RTL-PRICE PIC S9(7)V9(4) COMP-3.
+             10 QBP511-ITEM-RTL-CFOR    PIC S9(3) COMP-3.
+             10 QBP511-ITEM-GINA        PIC S9(6)V9(5) COMP-3.
+             10 QBP511-ITEM-BSP-AMT     PIC S9(4)V9(5) COMP-3.
+             10 QBP511-ITEM-INVV        PIC S9(4)V9(5) COMP-3.
+             10 QBP511-ITEM-IDIS        PIC S9(4)V9(5) COMP-3.
+             10 QBP511-ITEM-EXT-COST    PIC S9(7)V9(2) COMP-3.
+             10 QBP511-ITEM-EXT-CATA    PIC S9(7)V9(2) COMP-3.
+             10 QBP511-ITEM-EXT-NET-SELL PIC S9(7)V9(4) COMP-3.
+             10 QBP511-ITEM-FEES-AMT    PIC S9(8)V9(5) COMP-3.
+             10 QBP511-ITEM-ALWNC-AMT   PIC S9(6)V9(5) COMP-3.
+             10 QBP511-ITEM-TAX-AMT     PIC S9(7)V9(5) COMP-3.
+             10 QBP511-ITEM-DLVRY-PCT   PIC S9(1)V9(4) COMP-3.
+             10 QBP511-ITEM-PROF-PCT    PIC S9(5)V9(4) COMP-3.
+             10 QBP511-ITEM-GROSS-PCT   PIC S9(5)V9(4) COMP-3.
+             10 QBP511-ITEM-DSDT        PIC  9(8).
+             10 QBP511-ITEM-BUYR        PIC  X(03).
+             10 QBP511-ITEM-CSS-BUYR    PIC  X(03).
+             10 QBP511-ITEM-VEND        PIC  X(07).
+             10 QBP511-ITEM-WPHI        PIC S9(3) COMP-3.
+             10 QBP511-ITEM-WPTI        PIC S9(3) COMP-3.
+             10 QBP511-ITEM-INV-TYPE    PIC  X(01).
+      **     10 QBP511-ITEM-PROD-TYPE   PIC  X(01).
+      *                     B = BULK           F = POULTRY
+      *                     C = CIGARETTE      N = SNUFF
+      *                     D = CONTINUITY     S = STORE SUPPLY
+      *                     E = EGG            T = TOBACCO
+      **     10 QBP511-ITEM-SUB-PR-TYPE PIC  X(01).
+      **     10 QBP511-ITEM-CIG-CODE    PIC  X(04).
+             10 QBP511-ITEM-SECTION          PIC X(01).
+             10 QBP511-ITEM-BLL-NXT-AVL      PIC X(10).
+             10 QBP511-ITEM-PGM-CTRL-ID      PIC X(06).
+             10 QBP511-ITEM-RSTR-BUY-CD      PIC X(04).
+             10 QBP511-ITEM-SHP-DT           PIC 9(08).
+             10 QBP511-ITEM-SHP-TM           PIC X(08).
+             10 QBP511-ITEM-RLS-TM           PIC X(08).
+             10 QBP511-ITEM-FEE-GRP          PIC X(05).
+             10 QBP511-ITEM-SOURCE           PIC X.
+             10 QBP511-ITEM-SOLD-AT-COST     PIC X.
+             10 QBP511-ITEM-WILLCALL         PIC X.
+             10 QBP511-ITEM-HANDBILL         PIC X.
+             10 QBP511-ITEM-DIRECT-DLVRY     PIC X.
+             10 QBP511-ITEM-CMDTY            PIC X(03).
+             10 QBP511-ITEM-SUB-CMDTY        PIC X(03).
+             10 QBP511-ITEM-HAZ-IND          PIC X.
+             10 QBP511-ITEM-IVL-ORTP         PIC X.
+             10 QBP511-ITEM-SOT-AMT          PIC S9(6)V9(5) COMP-3.
+             10 QBP511-ITEM-PALT             PIC X(30).                 
+             10 QBP511-ITEM-BRAND            PIC X(20).                 
+             10 QBP511-ITEM-PALT2            PIC X(30).                 
+             10 FILLER                       PIC X(20).                 
+             10 QBP511-ITEM-OASIS-CLASS      PIC X(01).
+             10 QBP511-ITEM-OASIS-FACILITY   PIC X(04).
+             10 QBP511-ITEM-RLS-DT           PIC 9(08).
+             10 QBP511-ITEM-PCT-MKUP         PIC 9(5)V9999 COMP-3.
+             10 QBP511-ITEM-ORIG-UPC         PIC S9(15) COMP-3.
+             10 QBP511-ITEM-ORIG-UPC-IND     PIC X(01).
+             10 QBP511-ITEM-ALTERNATE-VENDOR PIC X(07).
+             10 QBP511-ITEM-CALL-NBR         PIC X(04).
+             10 QBP511-ITEM-BIO-ENG          PIC X(01).                 
+      
+      ******************************************************************
+      *      ITEX - ITEM EXCEPTION        - LEVEL 3                    *
+      * - ADDED QBP511-ITEX-PALT  FOR INV REDESIGN
+      * - ADDED QBP511-ITEX-PALT2 FOR INV REDESIGN
+      * - ADDED QBP511-ITEX-OASIS-CLASS FOR SOLO PROJECT     7/13/06
+      * - ADDED QBP511-ITEX-OASIS-FACILITY FOR SOLO PROJECT  7/13/06
+      * - INCREASED RECORD SIZE FROM 381 TO 386 FOR SOLO     7/13/06
+      * - REMOVED QBP511-ITEX-PROD-TYPE, QBP511-ITEX-SUB-PR-TYPE
+      *   AND QBP511-ITEX-CIG-CODE - NOT BEING USED.        11/15/06
+      * RLSDATE - ADDED RELEASE DATE FOR R101-BILLED-DT. CHG 386 TO 394
+      * 01/05/10  OMMEN     ADDED ORIG UPC TO ITEM AND ITEX
+      * 07/20/10  GARCIA    ADDED ORIG UPC IND, ALTERNATE-VENDOR AND
+      *                     QBP511-ITEX-MPCK TO ITEX ALONG WITH 76
+      *                     BYTES OF FILLER.
+      *********************************************************394BYTES*
+       01 QBP511-ITEX-DATA.
+          05 QBP511-ITEX-FIELDS.
+             10 QBP511-ITEX-DEPT-BREAK  PIC  X(05).
+             10 QBP511-ITEX-EXCP-DESC   PIC  X(30).
+             10 QBP511-ITEX-SPCK        PIC S9(07) COMP-3.
+             10 QBP511-ITEX-SIZE        PIC  X(15).
+             10 QBP511-ITEX-OQTY        PIC S9(05) COMP-3.
+             10 QBP511-ITEX-AQTY        PIC S9(05) COMP-3.
+             10 QBP511-ITEX-SQTY        PIC S9(05) COMP-3.
+             10 QBP511-ITEX-IQTY        PIC S9(05) COMP-3.
+             10 QBP511-ITEX-OADJ        PIC S9(05) COMP-3.
+             10 QBP511-ITEX-BLL-NXT-AVL PIC  X(10).
+             10 QBP511-ITEX-DSDT        PIC  X(10).
+             10 QBP511-ITEX-SUBO        PIC  X(07).
+             10 QBP511-ITEX-INV-DEPT    PIC  X(02).
+             10 QBP511-ITEX-RTL-ZONE    PIC  X(04).
+             10 QBP511-ITEX-ORIG-ITEM   PIC  X(07).
+             10 QBP511-ITEX-CMP-ITEM    PIC  X(07).
+             10 QBP511-ITEX-SUBS        PIC  X(01).
+             10 QBP511-ITEX-DEFR-DT     PIC  9(08).
+             10 QBP511-ITEX-GR-NET-INV  PIC  X(01).
+             10 QBP511-ITEX-PLCD        PIC  X(01).
+             10 QBP511-ITEX-PLT-QTY     PIC S9(05) COMP-3.
+             10 QBP511-ITEX-NBR-OF-PLTS PIC S9(05) COMP-3.
+             10 QBP511-ITEX-CASE-QTY    PIC S9(05) COMP-3.
+             10 QBP511-ITEX-DEAL-CNTR   PIC S9(03) COMP-3.
+             10 QBP511-ITEX-SHP-CPO-FL  PIC  X(01).
+             10 QBP511-ITEX-BILL-AVG-FL PIC  X(01).
+             10 QBP511-ITEX-RWI         PIC  X(01).
+                88 QBP511-ITEX-RND-WEIGHTED        VALUE 'C'.
+                88 QBP511-ITEX-AVG-WEIGHTED        VALUE 'I'.
+             10 QBP511-ITEX-IWGT        PIC S9(5)V9(2) COMP-3.
+             10 QBP511-ITEX-CWGT        PIC S9(5)V9(2) COMP-3.
+             10 QBP511-ITEX-CUBE        PIC S9(6)V9(3) COMP-3.
+             10 QBP511-ITEX-SCST        PIC S9(4)V9(5) COMP-3.
+             10 QBP511-ITEX-RTL-CRET    PIC S9(5)V9(2) COMP-3.
+             10 QBP511-ITEX-RTL-CFOR    PIC S9(3) COMP-3.
+             10 QBP511-ITEX-GINA        PIC S9(6)V9(5) COMP-3.
+             10 QBP511-ITEX-BSP-AMT     PIC S9(4)V9(5) COMP-3.
+             10 QBP511-ITEX-INVV        PIC S9(4)V9(5) COMP-3.
+             10 QBP511-ITEX-EXT-COST    PIC S9(7)V9(2) COMP-3.
+             10 QBP511-ITEX-EXT-CATA    PIC S9(7)V9(2) COMP-3.
+             10 QBP511-ITEX-TAX-AMT     PIC S9(7)V9(5) COMP-3.
+             10 QBP511-ITEX-DLVRY-PCT   PIC S9(1)V9(4) COMP-3.
+             10 QBP511-ITEX-PROF-PCT    PIC S9(5)V9(4) COMP-3.
+             10 QBP511-ITEX-CSS-BUYR    PIC  X(03).
+             10 QBP511-ITEX-VEND        PIC  X(07).
+             10 QBP511-ITEX-WPHI        PIC S9(3) COMP-3.
+             10 QBP511-ITEX-WPTI        PIC S9(3) COMP-3.
+             10 QBP511-ITEX-INV-TYPE    PIC  X(01).
+             10 QBP511-ITEX-SECTION     PIC  X(01).
+             10 QBP511-ITEX-PGM-CTRL-ID PIC  X(06).
+             10 QBP511-ITEX-RSTR-BUY-CD PIC  X(04).
+             10 QBP511-ITEX-SHP-DT      PIC  9(08).
+             10 QBP511-ITEX-SHP-TM      PIC  X(08).
+             10 QBP511-ITEX-RLS-TM      PIC  X(08).
+             10 QBP511-ITEX-SOURCE      PIC  X.
+             10 QBP511-ITEX-SOLD-AT-COST PIC X.
+             10 QBP511-ITEX-WILLCALL    PIC  X.
+             10 QBP511-ITEX-HANDBILL    PIC  X.
+             10 QBP511-ITEX-DIRECT-DLVRY PIC X.
+             10 QBP511-ITEX-CMDTY       PIC  X(03).
+             10 QBP511-ITEX-SUB-CMDTY   PIC  X(03).
+             10 QBP511-ITEX-HAZ-IND     PIC  X.
+             10 QBP511-ITEX-IVL-ORTP    PIC  X.
+             10 QBP511-ITEX-SOT-AMT     PIC S9(6)V9(5) COMP-3.
+             10 QBP511-ITEX-PALT        PIC  X(30).                     
+             10 QBP511-ITEX-BRAND       PIC X(20).                      
+             10 QBP511-ITEX-PALT2       PIC  X(30).                     
+             10 FILLER                  PIC X(20).                      
+             10 QBP511-ITEX-OASIS-CLASS PIC  X(01).
+             10 QBP511-ITEX-OASIS-FACILITY PIC X(04).
+             10 QBP511-ITEX-RLS-DT      PIC  9(08).
+             10 QBP511-ITEX-ORIG-UPC    PIC S9(15) COMP-3.
+             10 QBP511-ITEX-ORIG-UPC-IND PIC X(01).
+             10 QBP511-ITEX-ALTERNATE-VENDOR PIC X(07).
+             10 QBP511-ITEX-MPCK        PIC S9(07) COMP-3.
+             10 QBP511-ITEX-CALL-NBR    PIC  X(04).
+             10 FILLER                  PIC  X(66).
+      
+      ******************************************************************
+      *      ITOR - ORIGINAL OF SUB       - LEVEL 3                    *
+      *********************************************************140BYTES*
+      ************************************************GW02493  144BYTES*
+       01 QBP511-ITOR-DATA.
+          05 QBP511-ITOR-FIELDS.
+             10 QBP511-ITOR-ITEM        PIC  X(07).
+             10 QBP511-ITOR-DESC        PIC  X(50).
+             10 QBP511-ITOR-SUBO        PIC  X(07).
+             10 QBP511-ITOR-MPCK        PIC S9(07) COMP-3.
+             10 QBP511-ITOR-SIZE        PIC  X(15).
+             10 QBP511-ITOR-OQTY        PIC S9(05) COMP-3.
+             10 QBP511-ITOR-AQTY        PIC S9(05) COMP-3.
+             10 QBP511-ITOR-SQTY        PIC S9(05) COMP-3.
+             10 QBP511-ITOR-IQTY        PIC S9(05) COMP-3.
+             10 QBP511-ITOR-OADJ        PIC S9(05) COMP-3.
+             10 QBP511-ITOR-SCST        PIC S9(4)V9(5) COMP-3.
+             10 QBP511-ITOR-RTL-CFOR    PIC S9(03) COMP-3.
+             10 QBP511-ITOR-RTL-CRET    PIC S9(5)V9(2) COMP-3.
+             10 QBP511-ITOR-NDC-DESC    PIC  X(30).
+             10 QBP511-ITOR-NDCD        PIC  X(01).
+             10 QBP511-ITOR-SQNC-NBR    PIC S9(07) COMP-3.
+      
+      ******************************************************************
+      *      ITAL - ITEM ALLOWANCES       - LEVEL 3                    *
+      *             (MULTIPLE RECORDS PER ITEM)                        *
+      **********************************************************95BYTES*
+      ***********************************************GW02493    99BYTES*
+       01 QBP511-ITAL-DATA.
+          05 QBP511-ITAL-FIELDS.
+             10 QBP511-ITAL-AMOUNT      PIC S9(4)V9(5) COMP-3.
+             10 QBP511-ITAL-PM-NET      PIC S9(5)V9(4) COMP-3.
+             10 QBP511-ITAL-DESC-SHORT  PIC  X(15).
+             10 QBP511-ITAL-DESC        PIC  X(30).
+             10 QBP511-ITAL-N-CST       PIC  X(01).
+             10 QBP511-ITAL-BUYER-ID    PIC  X(03).
+             10 QBP511-ITAL-DEAL-NBR    PIC  9(04)     COMP.
+             10 QBP511-ITAL-DEAL-TYPE   PIC  X(01).
+             10 QBP511-ITAL-TYPE-EXP    PIC  X(01).
+             10 QBP511-ITAL-PROMO-PGM   PIC  X(01).
+             10 QBP511-ITAL-DEAL-AMT    PIC S9(7)V9(2) COMP-3.
+             10 QBP511-ITAL-START-DT    PIC  9(08).
+             10 QBP511-ITAL-END-DT      PIC  9(08).
+             10 QBP511-ITAL-EXT-ALWNC   PIC S9(8)V9(5) COMP-3.
+             10 QBP511-ITAL-PROMO-ID    PIC  X(04).
+             10 QBP511-ITAL-SQNC-NBR    PIC S9(07) COMP-3.
+             10 QBP511-ITAL-DEAL-CD     PIC  X(07).
+             10 QBP511-ITAL-VEND        PIC  X(07).                     
+             10 QBP511-ITAL-EXT-GRP-ID  PIC  X(20).                     
+             10 QBP511-ITAL-EXT-ARB-ID  PIC  X(20).                     
+             10 QBP511-ITAL-EXT-FEE-TYPE PIC X.                         
+             10 QBP511-ITAL-EXT-FEE-AMT PIC S9(5)V9(2) COMP-3.          
+      
+      ******************************************************************
+      *      ITSC - SHIPPER COMPONENTS    - LEVEL 3                    *
+      *             (MULTIPLE RECORDS PER ITEM)                        *
+      * - ADDED QBP511-ITSC-EXT-RTL-PRICE FOR INVOICE REDESIGN
+      **********************************************************75BYTES*
+       01 QBP511-ITSC-DATA.
+          05 QBP511-ITSC-FIELDS.
+             10 QBP511-ITSC-DESC        PIC  X(30).
+             10 QBP511-ITSC-SIZE        PIC  X(15).
+             10 QBP511-ITSC-QTY-UNT     PIC S9(07) COMP-3.
+             10 QBP511-ITSC-CST-UNT     PIC S9(6)V9(5) COMP-3.
+             10 QBP511-ITSC-RTL-MLT     PIC S9(03) COMP-3.
+             10 QBP511-ITSC-CPO-RTL     PIC S9(4)V9(3) COMP-3.
+             10 QBP511-ITSC-EXT-RTL-PRICE PIC S9(7)V9(4) COMP-3.
+             10 QBP511-ITSC-SOURCE      PIC  X(03).
+             10 QBP511-ITSC-SQNC-NBR    PIC S9(07) COMP-3.
+             10 QBP511-ITSC-BIO-ENG     PIC  X(01).                     
+      
+      ******************************************************************
+      *      ITWT - RANDOM WEIGHTS        - LEVEL 3                    *
+      *             (MULTIPLE RECORDS PER ITEM)                        *
+      **********************************************************11BYTES*
+      ***********************************************GW02493    15BYTES*
+       01 QBP511-ITWT-DATA.
+          05 QBP511-ITWT-FIELDS.
+             10 QBP511-ITWT-IQTY        PIC S9(05) COMP-3.
+             10 QBP511-ITWT-IWGT        PIC S9(5)V9(2) COMP-3.
+             10 QBP511-ITWT-SWGT        PIC S9(5)V9(2) COMP-3.
+             10 QBP511-ITWT-SQNC-NBR    PIC S9(07) COMP-3.
+      
+      ******************************************************************
+      *      ITND - NDC CODES             - LEVEL 3                    *
+      *             (MULTIPLE RECORDS PER ITEM)                        *
+      **********************************************************57BYTES*
+      ***********************************************GW02493    61BYTES*
+       01 QBP511-ITND-DATA.
+          05 QBP511-ITND-FIELDS.
+             10 QBP511-ITND-CODE        PIC  X(03).
+             10 QBP511-ITND-DESC        PIC  X(30).
+             10 QBP511-ITND-DESC-SHORT  PIC  X(15).
+             10 QBP511-ITND-ABBR        PIC  X(04).
+             10 QBP511-ITND-RSTR-BUY-CD PIC  X(04).
+             10 QBP511-ITND-INV-LOC     PIC  X(01).
+             10 QBP511-ITND-SQNC-NBR    PIC S9(07) COMP-3.
+      
+      ******************************************************************
+      *      ITFE - ITEM FEES             - LEVEL 3                    *
+      *             (MULTIPLE RECORDS PER ITEM)                        *
+      **********************************************************37BYTES*
+      ***********************************************GW02493    41BYTES*
+       01 QBP511-ITFE-DATA.
+          05 QBP511-ITFE-FIELDS.
+             10 QBP511-ITFE-FEE-AMT     PIC S9(7)V9(5) COMP-3.
+             10 QBP511-ITFE-FEE-PCT     PIC S9(7)V9(2) COMP-3.
+             10 QBP511-ITFE-FEE-DESC    PIC  X(25).
+             10 QBP511-ITFE-SQNC-NBR    PIC S9(07) COMP-3.
+      
+      ******************************************************************
+      *      ITTX - ITEM TAXES            - LEVEL 3                    *
+      *             (MULTIPLE RECORDS PER ITEM)                        *
+      **********************************************************21BYTES*
+      ***********************************************GW02493    25BYTES*
+       01 QBP511-ITTX-DATA.
+          05 QBP511-ITTX-FIELDS.
+             10 QBP511-ITTX-AMOUNT      PIC S9(4)V9(5) COMP-3.
+             10 QBP511-ITTX-TAX-EMBD    PIC  X(01).
+             10 QBP511-ITTX-PERCENT     PIC S9(4)V9(5) COMP-3.
+             10 QBP511-ITTX-PCNT-COST   PIC S9(4)V9(5) COMP-3.
+             10 QBP511-ITTX-PCNT-BASIS  PIC  X(01).
+             10 QBP511-ITTX-STATE-LOC   PIC  X(01).
+             10 QBP511-ITTX-COUNTY-LOC  PIC  X(01).
+             10 QBP511-ITTX-CITY-LOC    PIC  X(01).
+             10 QBP511-ITTX-OTHER-LOC   PIC  X(01).
+             10 QBP511-ITTX-SQNC-NBR    PIC S9(07) COMP-3.
+      *
+*/
