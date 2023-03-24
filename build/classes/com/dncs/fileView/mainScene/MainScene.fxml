@@ -27,7 +27,7 @@
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
         </rowConstraints>
          <children>
-            <SplitPane dividerPositions="0.6">
+            <SplitPane dividerPositions="0.5622037914691943">
                <items>
                   <TreeTableView fx:id="fileRecordTTV" minWidth="800.0" showRoot="false">
                     <columns>
@@ -42,6 +42,7 @@
                         <TableColumn fx:id="picTC" prefWidth="120.0" text="Pic" />
                       <TableColumn fx:id="startPosTC" prefWidth="60.0" text="Start pos" />
                       <TableColumn fx:id="endPosTC" prefWidth="60.0" text="End pos" />
+                        <TableColumn fx:id="keyLevelTC" prefWidth="75.0" text="Key" />
                     </columns>
                   </TableView>
                </items>

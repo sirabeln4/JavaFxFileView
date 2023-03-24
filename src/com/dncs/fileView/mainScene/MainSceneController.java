@@ -49,6 +49,8 @@ public class MainSceneController {
     private TableColumn<FileField, Integer> startPosTC;
     @FXML
     private TableColumn<FileField, Integer> endPosTC;
+    @FXML
+    private TableColumn<FileField, String> keyLevelTC;
     
     @FXML
     private TextArea rowText;
@@ -66,7 +68,7 @@ public class MainSceneController {
     @FXML
     private Label versionLabel;
     
-    private Context context = Context.getContext();
+    private final Context context = Context.getContext();
     
     @FXML
     private void initialize() {
@@ -88,6 +90,7 @@ public class MainSceneController {
         picTC.setCellValueFactory(new PropertyValueFactory<>("picTxt"));
         startPosTC.setCellValueFactory(new PropertyValueFactory<>("startPos"));
         endPosTC.setCellValueFactory(new PropertyValueFactory<>("endPos"));
+        keyLevelTC.setCellValueFactory(new PropertyValueFactory<>("keyLevel"));
         
         versionLabel.setText(context.getVersionNum());
         
@@ -153,7 +156,7 @@ public class MainSceneController {
     @FXML
     public void csvButtonOnAction() {
 
-        //TODO: temp fix
+        //TODO: fix csv file
         StringBuilder scvRec = new StringBuilder();
         
         TreeItem<FileRecord> root = fileRecordTTV.getRoot();
