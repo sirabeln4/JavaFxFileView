@@ -106,6 +106,8 @@
                 88 QBP511-KITM-TYPE-ITOR           VALUE '10'.
       *                                           ( ALLOWANCES )
                 88 QBP511-KITM-TYPE-ITAL           VALUE '20'.
+      *                                           ( REBATES )           
+                88 QBP511-KITM-TYPE-IRBT           VALUE '22'.          
       *                                           ( SHIPPER COMPONENTS )
                 88 QBP511-KITM-TYPE-ITSC           VALUE '30'.
       *                                           ( RANDOM WEIGHTS )
@@ -625,7 +627,19 @@
              10 QBP511-ITAL-EXT-ARB-ID  PIC  X(20).                     
              10 QBP511-ITAL-EXT-FEE-TYPE PIC X.                         
              10 QBP511-ITAL-EXT-FEE-AMT PIC S9(5)V9(2) COMP-3.          
-      
+
+      ******************************************************************
+      *      IRBT - ITEM REBATES          - LEVEL 3                     
+      *      ( ZERO TO MANY RECORDS PER ITEM )                          
+      ******************************************************** 54 BYTES 
+       01 QBP511-IRBT-DATA.                                             
+          05 QBP511-IRBT-FIELDS.                                        
+             10 QBP511-IRBT-PROMO-ID    PIC  X(04).                     
+             10 QBP511-IRBT-DESC-SHORT  PIC  X(15).                     
+             10 QBP511-IRBT-DESC        PIC  X(30).                     
+             10 QBP511-IRBT-AMOUNT      PIC S9(4)V9(5) COMP-3.          
+
+
       ******************************************************************
       *      ITSC - SHIPPER COMPONENTS    - LEVEL 3                    *
       *             (MULTIPLE RECORDS PER ITEM)                        *

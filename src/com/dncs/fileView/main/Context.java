@@ -7,7 +7,7 @@ public class Context {
     private static Context context;
     private String textValue = "Text";
     private Stage primaryStage;
-    private String versionNum = "V 0.1.0";
+    private String versionNum = "V 0.2.0";
 
     public static synchronized Context getContext() {
         if (context == null) {

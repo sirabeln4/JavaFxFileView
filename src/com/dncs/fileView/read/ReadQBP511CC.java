@@ -15,13 +15,13 @@ import javafx.scene.control.TreeItem;
 public class ReadQBP511CC {
 
     private TreeItem<FileRecord> rootTI;
-    private FileRecord lvl1FR;
-    private FileRecord lvl2FR;
-    private FileRecord lvl3FR;
+    //private FileRecord lvl1FR;
+    //private FileRecord lvl2FR;
+    //private FileRecord lvl3FR;
 
-    private TreeItem<FileRecord> lvl1TI;
-    private TreeItem<FileRecord> lvl2TI;
-    private TreeItem<FileRecord> lvl3TI;
+    //private TreeItem<FileRecord> lvl1TI;
+    //private TreeItem<FileRecord> lvl2TI;
+    //private TreeItem<FileRecord> lvl3TI;
 
     private BufferedInputStream reader;
     private Boolean eof;
@@ -31,9 +31,9 @@ public class ReadQBP511CC {
         FileInputStream fis;
 
         rootTI = new TreeItem<>(new FileRecord());
-        lvl1FR = new FileRecord();
-        lvl2FR = new FileRecord();
-        lvl3FR = new FileRecord();
+        //lvl1FR = new FileRecord();
+        //lvl2FR = new FileRecord();
+        //lvl3FR = new FileRecord();
 
         try {
 
@@ -70,7 +70,7 @@ public class ReadQBP511CC {
             Integer lrecl = Integer.valueOf(intToHex(lrecl1) + intToHex(lrecl2), 16);
             // Integer lrecl = Integer.parseInt(intToHex(lrecl1) + intToHex(lrecl2), 16);
 
-            System.out.println(" ");
+            System.out.println("lrecl 1&2 " + lrecl1 + lrecl2);
             System.out.println("lrecl = " + lrecl);
             for (int i = 0; i < lrecl; i++) {
                 int nextByte = reader.read();
@@ -87,50 +87,11 @@ public class ReadQBP511CC {
             String charRecord = StringUtils.rightPad(charSB.toString(), lrecl);
             String hexRecord = StringUtils.rightPad(hexSB.toString(), lrecl * 2, "00");
 
-            System.out.println(hexRecord);
+            //System.out.println(charRecord);
+            //System.out.println(hexRecord);
             QBP511CC qbp511CC = new QBP511CC(hexRecord, charRecord);
-
-            if (qbp511CC.getLvl1()) {
-                //lvl1FR = new FileRecord();
-                lvl2FR = new FileRecord();
-                lvl3FR = new FileRecord();
-                if (!StringUtils.equals(lvl1FR.getCompareValue(), qbp511CC.getLevelFR().getCompareValue())) {
-                    this.lvl1FR = qbp511CC.getLevelFR();
-                    this.lvl1TI = new TreeItem<>(lvl1FR);
-                    this.rootTI.getChildren().add(lvl1TI);
-                }
-                if (qbp511CC.getSubRecFR() != null) {
-                    this.lvl1TI.getChildren().add(new TreeItem<>(qbp511CC.getSubRecFR()));
-                    this.lvl1TI.setExpanded(true);
-                }
-            } else if (qbp511CC.getLvl2()) {
-                lvl1FR = new FileRecord();
-                //lvl2FR = new FileRecord();
-                lvl3FR = new FileRecord();
-                if (!StringUtils.equals(lvl2FR.getCompareValue(), qbp511CC.getLevelFR().getCompareValue())) {
-                    this.lvl2FR = qbp511CC.getLevelFR();
-                    this.lvl2TI = new TreeItem<>(lvl2FR);
-                    this.rootTI.getChildren().add(lvl2TI);
-                }
-                if (qbp511CC.getSubRecFR() != null) {
-                    this.lvl2TI.getChildren().add(new TreeItem<>(qbp511CC.getSubRecFR()));
-                    this.lvl2TI.setExpanded(true);
-                }
-            } else if (qbp511CC.getLvl3()) {
-                lvl1FR = new FileRecord();
-                lvl2FR = new FileRecord();
-                //lvl3FR = new FileRecord();
-                if (!StringUtils.equals(lvl3FR.getCompareValue(), qbp511CC.getLevelFR().getCompareValue())) {
-                    this.lvl3FR = qbp511CC.getLevelFR();
-                    this.lvl3TI = new TreeItem<>(lvl3FR);
-                    this.rootTI.getChildren().add(lvl3TI);
-                }
-                if (qbp511CC.getSubRecFR() != null) {
-                    this.lvl3TI.getChildren().add(new TreeItem<>(qbp511CC.getSubRecFR()));
-                    this.lvl3TI.setExpanded(true);
-                }
-            }
-
+            this.rootTI.getChildren().add(new TreeItem<>(qbp511CC.getSubRecFR()));
+            
         } catch (IOException e) {
         }
 

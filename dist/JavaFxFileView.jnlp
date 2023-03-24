@@ -8,7 +8,7 @@
   </information>
   <resources>
     <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
-    <jar href="JavaFxFileView.jar" size="59582" download="eager" />
+    <jar href="JavaFxFileView.jar" size="64306" download="eager" />
     <jar href="lib\commons-lang3-3.12.0.jar" size="587402" download="eager" />
   </resources>
   <jfx:javafx-desc  width="800" height="600" main-class="com.dncs.fileView.main.Main"  name="JavaFxFileView" />
