@@ -3,7 +3,6 @@ package com.dncs.fileView.read;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -22,11 +21,10 @@ public class ReadQBP511CC {
     //private TreeItem<FileRecord> lvl1TI;
     //private TreeItem<FileRecord> lvl2TI;
     //private TreeItem<FileRecord> lvl3TI;
-
     private BufferedInputStream reader;
     private Boolean eof;
 
-    public void processFile(File file) {
+    public void processFile(File file) throws Exception {
 
         FileInputStream fis;
 
@@ -47,6 +45,7 @@ public class ReadQBP511CC {
             fis.close();
 
         } catch (Exception e) {
+            throw e;
         }
 
     }
@@ -56,44 +55,40 @@ public class ReadQBP511CC {
         StringBuilder charSB = new StringBuilder();
         StringBuilder hexSB = new StringBuilder();
 
-        try {
-            int lrecl1 = reader.read();
-            if (lrecl1 == -1) {
-                eof = true;
-                return;
-            }
-            int lrecl2 = reader.read();
-            if (lrecl2 == -1) {
-                throw new Exception("The second byte of the lrecl is missing");
-            }
-
-            Integer lrecl = Integer.valueOf(intToHex(lrecl1) + intToHex(lrecl2), 16);
-            // Integer lrecl = Integer.parseInt(intToHex(lrecl1) + intToHex(lrecl2), 16);
-
-            System.out.println("lrecl 1&2 " + lrecl1 + lrecl2);
-            System.out.println("lrecl = " + lrecl);
-            for (int i = 0; i < lrecl; i++) {
-                int nextByte = reader.read();
-                if (nextByte < 0) {
-                    eof = true;
-                    break;
-                }
-
-                charSB.append((char) nextByte);
-                hexSB.append(intToHex(nextByte));
-
-            }
-
-            String charRecord = StringUtils.rightPad(charSB.toString(), lrecl);
-            String hexRecord = StringUtils.rightPad(hexSB.toString(), lrecl * 2, "00");
-
-            //System.out.println(charRecord);
-            //System.out.println(hexRecord);
-            QBP511CC qbp511CC = new QBP511CC(hexRecord, charRecord);
-            this.rootTI.getChildren().add(new TreeItem<>(qbp511CC.getSubRecFR()));
-            
-        } catch (IOException e) {
+        int lrecl1 = reader.read();
+        if (lrecl1 == -1) {
+            eof = true;
+            return;
         }
+        int lrecl2 = reader.read();
+        if (lrecl2 == -1) {
+            throw new Exception("The second byte of the lrecl is missing");
+        }
+
+        Integer lrecl = Integer.valueOf(intToHex(lrecl1) + intToHex(lrecl2), 16);
+        // Integer lrecl = Integer.parseInt(intToHex(lrecl1) + intToHex(lrecl2), 16);
+
+        //System.out.println("lrecl 1&2 " + lrecl1 + lrecl2);
+        //System.out.println("lrecl = " + lrecl);
+        for (int i = 0; i < lrecl; i++) {
+            int nextByte = reader.read();
+            if (nextByte < 0) {
+                eof = true;
+                break;
+            }
+
+            charSB.append((char) nextByte);
+            hexSB.append(intToHex(nextByte));
+
+        }
+
+        String charRecord = StringUtils.rightPad(charSB.toString(), lrecl);
+        String hexRecord = StringUtils.rightPad(hexSB.toString(), lrecl * 2, "00");
+
+        //System.out.println(charRecord);
+        //System.out.println(hexRecord);
+        QBP511CC qbp511CC = new QBP511CC(hexRecord, charRecord);
+        this.rootTI.getChildren().add(new TreeItem<>(qbp511CC.getSubRecFR()));
 
     }
 

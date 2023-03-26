@@ -15,7 +15,7 @@ public class Main extends Application {
 		try {
 			
 			Context context = Context.getContext();
-			System.out.println("* context text = " + context.getTextValue());
+			//System.out.println("* context text = " + context.getTextValue());
 			context.setTextValue("new text");
 			context.setPrimaryStage(primaryStage);
 			
