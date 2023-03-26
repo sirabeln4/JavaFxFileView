@@ -7,10 +7,6 @@ import javafx.collections.ObservableList;
 
 public class QBP511CC {
 
-    private Boolean lvl1;
-    private Boolean lvl2;
-    private Boolean lvl3;
-
     private FileRecord levelFR;
     private FileRecord subRecFR;
 
@@ -436,7 +432,7 @@ public class QBP511CC {
     private String l10_QBP511_ITEM_OASIS_FACILITY;   //PIC X(04).
     private String l10_QBP511_ITEM_RLS_DT;           //PIC 9(08).
     private String l10_QBP511_ITEM_PCT_MKUP;         //PIC 9(5)V9999 COMP-3.
-    private String l10_QBP511_ITEM_ORIG_UPC;         //PIC S9(15) COMP_3.
+    private String l10_QBP511_ITEM_ORIG_UPC;         //PIC S9(15) COMP-3.
     private String l10_QBP511_ITEM_ORIG_UPC_IND;     //PIC X(01).
     private String l10_QBP511_ITEM_ALTERNATE_VENDOR; //PIC X(07).
     private String l10_QBP511_ITEM_CALL_NBR;         //PIC X(04).
@@ -590,7 +586,7 @@ public class QBP511CC {
     private String l10_QBP511_ITAL_EXT_ARB_ID;   //PIC  X(20).                     
     private String l10_QBP511_ITAL_EXT_FEE_TYPE; //PIC X.                         
     private String l10_QBP511_ITAL_EXT_FEE_AMT;  //PIC S9(5)V9(2) COMP-3.   
-    
+
     //  ******************************************************************
     //  *      IRBT - ITEM REBATES          - LEVEL 3                     
     //  *      ( ZERO TO MANY RECORDS PER ITEM )                          
@@ -679,16 +675,11 @@ public class QBP511CC {
     private String l10_QBP511_ITTX_SQNC_NBR;    //PIC S9(07) COMP-3.
     //*
 
-    //private final Integer lrecl;
-    //QBP511CrecTypes rt;
     public QBP511CC(String hexString, String charString) throws Exception {
         super();
 
-        System.out.println("charString len = " + charString.length()
-                + " hexString len = " + hexString.length());
-        this.lvl1 = false;
-        this.lvl2 = false;
-        this.lvl3 = false;
+        //System.out.println("charString len = " + charString.length()
+        //        + " hexString len = " + hexString.length());
 
         this.fullHexString = hexString;
         this.fullCharString = charString;
@@ -800,10 +791,9 @@ public class QBP511CC {
         String dataHex = StringUtils.substring(hexString, hexIndex);
         String dataChar = StringUtils.substring(charString, currentIndex);
 
-        System.out.println("Data Len = " + l10_QBP511_DATA_LENGTH
-                + "  key = " + l10_QBP511_KNVC_TYPE + l10_QBP511_KNVB_TYPE + l10_QBP511_KITM_TYPE + l10_QBP511_KITM_ITEM_EX_CD);
-        System.out.println();
-
+        //System.out.println("Data Len = " + l10_QBP511_DATA_LENGTH
+        //        + "  key = " + l10_QBP511_KNVC_TYPE + l10_QBP511_KNVB_TYPE + l10_QBP511_KITM_TYPE + l10_QBP511_KITM_ITEM_EX_CD);
+        // System.out.println();
         if (StringUtils.equals(l10_QBP511_KNVC_TYPE, "00")) {
             //00 INVC - INVOICE MASTER DATA								LEVEL 1	467 BYTES
             QBP511_INVC_DATA(dataHex, dataChar);
@@ -867,22 +857,22 @@ public class QBP511CC {
             //70 ITTX - ITEM TAXES                                       LEVEL3  25 BYTES
             QBP511_ITTX_DATA(dataHex, dataChar);
         } else {
-            //rt = new QBP511CrecTypes("Unknown", "", "unknown", dataChar);
-            //TODO: 
-            //displayLevel1();
-            //displayLevel2();
-            //displayLevel3();
-            //System.out.print(StringUtils.substring(charString, currentIndex));
-            //System.out.println("");
-            throw new Exception("Unknow type");
-
+            this.fullFileFieldList = FXCollections.observableArrayList();
+            currentIndex = 1;
+            this.fullLevelKey();
+            this.fullFileFieldList.add(buildFileField("l10_QBP511_DATA_LENGTH", this.l10_QBP511_DATA_LENGTH.toString(), 2, "9(04) COMP"));
+            
+            String frKey = "L? - unknown rec type";
+            String frValue = this.frValueLevel1();
+            
+            this.subRecFR = new FileRecord(frKey, frValue, "",
+                this.fullFileFieldList, this.fullHexString, this.fullCharString);
         }
 
     }
 
     private void QBP511_INVC_DATA(String dataHex, String dataChar) {
 
-        this.lvl1 = true;
         currentIndex = 0;
 
         this.l10_QBP511_INVC_DDAY = subString(dataChar, 1);	//PIC  9(01).
@@ -961,7 +951,6 @@ public class QBP511CC {
 
     private void QBP511_ICNT_DATA(String dataChar) {
 
-        this.lvl1 = true;
         currentIndex = 0;
 
         this.l10_QBP511_ICNT_CONTACT = subString(dataChar, 10);	//PIC  X(10).
@@ -991,7 +980,6 @@ public class QBP511CC {
 
     private void QBP511_IMFE_DATA(String dataHex, String dataChar) {
 
-        this.lvl1 = true;
         currentIndex = 0;
 
         this.l10_QBP511_IMFE_FEE_AMT = subStringComp3(dataHex, 7, 8, 5);	//PIC S9(7)V9(5) COMP-3.
@@ -1018,7 +1006,6 @@ public class QBP511CC {
 
     private void QBP511_IMTF_DATA(String dataHex, String dataChar) {
 
-        this.lvl1 = true;
         currentIndex = 0;
 
         this.l10_QBP511_IMTF_FEE_AMT = subStringComp3(dataHex, 7, 8, 5);	//PIC S9(7)V9(5) COMP-3.
@@ -1045,7 +1032,6 @@ public class QBP511CC {
 
     private void QBP511_IMLI_DATA(String dataChar) {
 
-        this.lvl1 = true;
         currentIndex = 0;
 
         String l15_QBP511_IMLI_WHSE_LICENSE1 = subString(dataChar, 15);
@@ -1148,7 +1134,6 @@ public class QBP511CC {
 
     private void QBP511_IMLD_DATA(String dataChar) {
 
-        this.lvl1 = true;
         currentIndex = 0;
 
         String l15_QBP511_IMLD_LICENSE_TYPE_1 = subString(dataChar, 3);
@@ -1224,7 +1209,6 @@ public class QBP511CC {
 
     private void QBP511_INVT_DATA(String dataHex, String dataChar) {
 
-        this.lvl1 = true;
         currentIndex = 0;
 
         this.l10_QBP511_INVT_ENDING_INVC_NO = subStringComp3(dataHex, 4, 7, 0);	//PIC S9(7) COMP-3.
@@ -1321,7 +1305,6 @@ public class QBP511CC {
 
     private void QBP511_INVB_DATA(String dataChar) {
 
-        this.lvl2 = true;
         currentIndex = 0;
 
         this.l10_QBP511_INVB_DDAT = subString(dataChar, 8);   //PIC  9(08).
@@ -1372,7 +1355,6 @@ public class QBP511CC {
 
     private void QBP511_IBFE_DATA(String dataHex, String dataChar) {
 
-        this.lvl2 = true;
         currentIndex = 0;
 
         this.l10_QBP511_IBFE_FEE_AMT = subStringComp3(dataHex, 7, 7, 5);  //PIC S9(7)V9(5) COMP-3.
@@ -1396,7 +1378,6 @@ public class QBP511CC {
 
     private void QBP511_IVBT_DATA(String dataHex, String dataChar) {
 
-        this.lvl2 = true;
         currentIndex = 0;
 
         this.l10_QBP511_IVBT_DEPT_DESC = subString(dataChar, 30);            //PIC X(30).
@@ -1428,7 +1409,6 @@ public class QBP511CC {
 
     private void QBP511_ITEM_DATA(String dataHex, String dataChar) {
 
-        this.lvl3 = true;
         currentIndex = 0;
 
         this.l10_QBP511_ITEM_SQNC_NBR = subStringComp3(dataHex, 4, 7, 0);   //PIC S9(07) COMP-3.
@@ -1523,7 +1503,7 @@ public class QBP511CC {
         this.l10_QBP511_ITEM_OASIS_FACILITY = subString(dataChar, 4);            //PIC X(04).
         this.l10_QBP511_ITEM_RLS_DT = subString(dataChar, 8);            //PIC 9(08).
         this.l10_QBP511_ITEM_PCT_MKUP = subStringComp3(dataHex, 5, 5, 4);  //PIC 9(5)V9999 COMP-3.
-        this.l10_QBP511_ITEM_ORIG_UPC = subStringComp3(dataHex, 8, 15, 0); //PIC S9(15) COMP_3.
+        this.l10_QBP511_ITEM_ORIG_UPC = subStringComp3(dataHex, 8, 15, 0); //PIC S9(15) COMP-3.
         this.l10_QBP511_ITEM_ORIG_UPC_IND = subString(dataChar, 1);            //PIC X(01).
         this.l10_QBP511_ITEM_ALTERNATE_VENDOR = subString(dataChar, 7);            //PIC X(07).
         this.l10_QBP511_ITEM_CALL_NBR = subString(dataChar, 4);            //PIC X(04).
@@ -1617,7 +1597,7 @@ public class QBP511CC {
         this.fullFileFieldList.add(buildFileField("l10_QBP511_ITEM_OASIS_FACILITY", this.l10_QBP511_ITEM_OASIS_FACILITY, 4, "X(04)"));
         this.fullFileFieldList.add(buildFileField("l10_QBP511_ITEM_RLS_DT", this.l10_QBP511_ITEM_RLS_DT, 8, "9(08)"));
         this.fullFileFieldList.add(buildFileField("l10_QBP511_ITEM_PCT_MKUP", this.l10_QBP511_ITEM_PCT_MKUP, 5, "9(5)V9999 COMP-3"));
-        this.fullFileFieldList.add(buildFileField("l10_QBP511_ITEM_ORIG_UPC", this.l10_QBP511_ITEM_ORIG_UPC, 8, "S9(15) COMP_3"));
+        this.fullFileFieldList.add(buildFileField("l10_QBP511_ITEM_ORIG_UPC", this.l10_QBP511_ITEM_ORIG_UPC, 8, "S9(15) COMP-3"));
         this.fullFileFieldList.add(buildFileField("l10_QBP511_ITEM_ORIG_UPC_IND", this.l10_QBP511_ITEM_ORIG_UPC_IND, 1, "X(01)"));
         this.fullFileFieldList.add(buildFileField("l10_QBP511_ITEM_ALTERNATE_VENDOR", this.l10_QBP511_ITEM_ALTERNATE_VENDOR, 7, "X(07)"));
         this.fullFileFieldList.add(buildFileField("l10_QBP511_ITEM_CALL_NBR", this.l10_QBP511_ITEM_CALL_NBR, 4, "X(04)"));
@@ -1632,7 +1612,6 @@ public class QBP511CC {
 
     private void QBP511_ITEX_DATA(String dataHex, String dataChar) {
 
-        this.lvl3 = true;
         currentIndex = 0;
 
         this.l10_QBP511_ITEX_DEPT_BREAK = subString(dataChar, 5);             //PIC  X(05).
@@ -1804,7 +1783,6 @@ public class QBP511CC {
 
     private void QBP511_ITOR_DATA(String dataHex, String dataChar) {
 
-        this.lvl3 = true;
         currentIndex = 0;
 
         this.l10_QBP511_ITOR_ITEM = subString(dataChar, 7); //PIC  X(07).
@@ -1855,7 +1833,6 @@ public class QBP511CC {
 
     private void QBP511_ITAL_DATA(String dataHex, String dataChar) {
 
-        this.lvl3 = true;
         currentIndex = 0;
 
         this.L10_QBP511_ITAL_AMOUNT = subStringComp3(dataHex, 5, 4, 5);   //PIC S9(4)V9(5) COMP-3.
@@ -1915,12 +1892,11 @@ public class QBP511CC {
         this.subRecFR = new FileRecord(frKey, frValue, "", this.fullFileFieldList, this.fullHexString, this.fullCharString);
 
     }
-    
+
     private void QBP511_IRTB_DATA(String dataHex, String dataChar) {
 
-        this.lvl3 = true;
         currentIndex = 0;
-        
+
         this.l10_QBP511_IRBT_PROMO_ID = subString(dataChar, 4);           //PIC  X(04).
         this.l10_QBP511_IRBT_DESC_SHORT = subString(dataChar, 15);          //PIC  X(15).
         this.l10_QBP511_IRBT_DESC = subString(dataChar, 30);          //PIC  X(30).
@@ -1935,7 +1911,7 @@ public class QBP511CC {
         this.fullFileFieldList.add(buildFileField("l10_QBP511_IRBT_DESC_SHORT", this.l10_QBP511_IRBT_DESC_SHORT, 15, "X(15)"));
         this.fullFileFieldList.add(buildFileField("l10_QBP511_IRBT_DESC", this.l10_QBP511_IRBT_DESC, 30, "X(30)"));
         this.fullFileFieldList.add(buildFileField("l10_QBP511_IRBT_AMOUNT", this.l10_QBP511_IRBT_AMOUNT, 5, "S9(4)V9(5) COMP-3"));
-        
+
         String frKey = "L3 - 22 IRBT - ITEM REBATES";
         String frValue = this.frValueLevel3();
 
@@ -1943,10 +1919,9 @@ public class QBP511CC {
                 this.fullFileFieldList, this.fullHexString, this.fullCharString);
 
     }
-    
+
     private void QBP511_ITSC_DATA(String dataHex, String dataChar) {
 
-        this.lvl3 = true;
         currentIndex = 0;
 
         this.l10_QBP511_ITSC_DESC = subString(dataChar, 30);          //PIC  X(30).
@@ -1986,7 +1961,6 @@ public class QBP511CC {
 
     private void QBP511_ITWT_DATA(String dataHex) {
 
-        this.lvl3 = true;
         currentIndex = 0;
 
         this.l10_QBP511_ITWT_IQTY = subStringComp3(dataHex, 3, 5, 0); //PIC S9(05) COMP-3.
@@ -2014,7 +1988,6 @@ public class QBP511CC {
 
     private void QBP511_ITND_DATA(String dataHex, String dataChar) {
 
-        this.lvl3 = true;
         currentIndex = 0;
 
         this.l10_QBP511_ITND_CODE = subString(dataChar, 03);              //PIC  X(03).
@@ -2048,7 +2021,6 @@ public class QBP511CC {
 
     private void QBP511_ITFE_DATA(String dataHex, String dataChar) {
 
-        this.lvl3 = true;
         currentIndex = 0;
 
         this.l10_QBP511_ITFE_FEE_AMT = subStringComp3(dataHex, 7, 7, 5); //PIC S9(7)V9(5) COMP-3.
@@ -2076,7 +2048,6 @@ public class QBP511CC {
 
     private void QBP511_ITTX_DATA(String dataHex, String dataChar) {
 
-        this.lvl3 = true;
         currentIndex = 0;
 
         this.l10_QBP511_ITTX_AMOUNT = subStringComp3(dataHex, 5, 4, 5);  //PIC S9(4)V9(5) COMP-3.
@@ -2341,19 +2312,7 @@ public class QBP511CC {
 
         return new FileField(nameTxt, recTypeValue, picTxt, startPos, endPos);
     }
-
-    public Boolean getLvl1() {
-        return lvl1;
-    }
-
-    public Boolean getLvl2() {
-        return lvl2;
-    }
-
-    public Boolean getLvl3() {
-        return lvl3;
-    }
-
+    
     public FileRecord getLevelFR() {
         return levelFR;
     }

@@ -27,7 +27,7 @@ public class FileField {
         String tempnumtxt = StringUtils.substring(nameTxt, 1, 3);
         //System.out.println(tempnumtxt);
         if (StringUtils.isNumeric(tempnumtxt)) {
-            tempnum = Integer.parseInt(tempnumtxt);
+            tempnum = Integer.valueOf(tempnumtxt);
             tempName = StringUtils.substring(nameTxt, 4);
         }
 
@@ -56,7 +56,7 @@ public class FileField {
         String tempnumtxt = StringUtils.substring(nameTxt, 1, 3);
         //System.out.println(tempnumtxt);
         if (StringUtils.isNumeric(tempnumtxt)) {
-            tempnum = Integer.parseInt(tempnumtxt);
+            tempnum = Integer.valueOf(tempnumtxt);
             tempName = StringUtils.substring(nameTxt, 4);
         }
 
