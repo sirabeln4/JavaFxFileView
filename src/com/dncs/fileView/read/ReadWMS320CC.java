@@ -3,7 +3,6 @@ package com.dncs.fileView.read;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -18,9 +17,11 @@ public class ReadWMS320CC {
     private BufferedInputStream reader;
     private Boolean eof;
     private Integer lrecl;
-
+    private Integer recNum;
+    
     public void processFile(File file, Integer lrecl) throws Exception {
 
+        recNum = 1;
         FileInputStream fis;
         rootTI = new TreeItem<>(new FileRecord());
         this.lrecl = lrecl;
@@ -46,32 +47,26 @@ public class ReadWMS320CC {
 
     private void readFile() throws Exception {
 
-        StringBuffer charSB = new StringBuffer();
-        StringBuffer hexSB = new StringBuffer();
+        StringBuilder charSB = new StringBuilder();
+        StringBuilder hexSB = new StringBuilder();
 
-        try {
-
-            for (int i = 0; i < lrecl; i++) {
-                int nextByte = reader.read();
-                if (nextByte < 0) {
-                    eof = true;
-                    break;
-                }
-
-                charSB.append((char) nextByte);
-                hexSB.append(intToHex(nextByte));
-
+        for (int i = 0; i < lrecl; i++) {
+            int nextByte = reader.read();
+            if (nextByte < 0) {
+                eof = true;
+                break;
             }
 
-            String charRecord = StringUtils.rightPad(charSB.toString(), lrecl);
-            String hexRecord = StringUtils.rightPad(hexSB.toString(), lrecl * 2, "00");
+            charSB.append((char) nextByte);
+            hexSB.append(intToHex(nextByte));
 
-            WMS320CC wms320CC = new WMS320CC(hexRecord, charRecord);
-            this.rootTI.getChildren().add(new TreeItem<>(wms320CC.getFileRecord()));
-
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+
+        String charRecord = StringUtils.rightPad(charSB.toString(), lrecl);
+        String hexRecord = StringUtils.rightPad(hexSB.toString(), lrecl * 2, "00");
+
+        WMS320CC wms320CC = new WMS320CC(hexRecord, charRecord, recNum++);
+        this.rootTI.getChildren().add(new TreeItem<>(wms320CC.getFileRecord()));
 
     }
 

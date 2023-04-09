@@ -1,5 +1,8 @@
 package com.dncs.fileView.mainScene;
 
+import com.dncs.fileView.filters.Qbp511ccFilter;
+import com.dncs.fileView.filters.Qbp511ccFilterSceneController;
+import com.dncs.fileView.filters.RecTypeFilter;
 import java.io.File;
 
 import org.apache.commons.lang3.StringUtils;
@@ -19,11 +22,15 @@ import java.io.IOException;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TreeItem;
@@ -31,7 +38,13 @@ import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TreeItemPropertyValueFactory;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 public class MainSceneController {
 
@@ -62,6 +75,12 @@ public class MainSceneController {
 
     @FXML
     private MenuItem saveMenuItem;
+    @FXML
+    private MenuItem copyMenuItem;
+    @FXML
+    private MenuItem copyContextMenuItem;
+    @FXML
+    private MenuItem filterMenuItem;
 
     @FXML
     private Label filePositionLabel;
@@ -71,19 +90,28 @@ public class MainSceneController {
     private Label fileNameLabel;
     @FXML
     private Label versionLabel;
+    @FXML
+    private Label filterLabel;
 
     private final Context context = Context.getContext();
 
+    TreeItem<FileRecord> fileTI;
+
     private Integer totalRecCnt;
     private File inputFile;
+    private Qbp511ccFilter qbp511ccFilter;
 
     @FXML
     public void initialize() {
 
         //System.out.println("initialize()");
+        qbp511ccFilter = new Qbp511ccFilter();
         totalRecCnt = 0;
         fileKeyTTC.setCellValueFactory(new TreeItemPropertyValueFactory<>("fileKey"));
         fileValueTTC.setCellValueFactory(new TreeItemPropertyValueFactory<>("fileValue"));
+
+        fileFieldTV.getSelectionModel().setCellSelectionEnabled(true);
+        fileFieldTV.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         fieldNameTC.setCellValueFactory(new PropertyValueFactory<>("fieldNameTxt"));
         fieldValueTC.setCellValueFactory(new PropertyValueFactory<>("fieldValueTxt"));
@@ -117,7 +145,9 @@ public class MainSceneController {
                 return;
             }
 
-            Integer selectedItemNum = (fileRecordTTV.getSelectionModel().getSelectedIndex()) + 1;
+            Integer selectedItemNum = fileRecordTTV.getSelectionModel()
+                    .getSelectedItem().getValue().getRecNum();
+
             filePositionLabel.setText("rec: " + selectedItemNum + " of " + totalRecCnt);
 
             FileRecord fr = newSelection.getValue();
@@ -152,8 +182,17 @@ public class MainSceneController {
 
         fileFieldTV.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newFileField) -> {
 
+            copyMenuItem.setDisable(true);
+            copyContextMenuItem.setDisable(true);
             rowText.deselect();
             if (newFileField == null) {
+                return;
+            }
+
+            copyMenuItem.setDisable(false);
+            copyContextMenuItem.setDisable(false);
+            ObservableList<FileField> selectedItems = fileFieldTV.getSelectionModel().getSelectedItems();
+            if (selectedItems.size() > 1) {
                 return;
             }
 
@@ -164,6 +203,61 @@ public class MainSceneController {
             rowText.selectRange(startRange, endRange);
 
         });
+
+    }
+
+    @FXML
+    public void copyMenuItemOnAction() {
+
+        ObservableList<TablePosition> posList = fileFieldTV.getSelectionModel().getSelectedCells();
+        StringBuilder clipboardString = new StringBuilder();
+        int old_r = -1;
+
+        for (TablePosition p : posList) {
+            int r = p.getRow();
+            int c = p.getColumn();
+            Object cell = fileFieldTV.getColumns().get(c).getCellData(r);
+            if (cell == null) {
+                cell = "";
+            }
+            if (old_r == r) {
+                clipboardString.append('\t');
+            } else if (old_r != -1) {
+                clipboardString.append('\n');
+            }
+            clipboardString.append(cell);
+            old_r = r;
+        }
+        final ClipboardContent content = new ClipboardContent();
+        content.putString(clipboardString.toString());
+        Clipboard.getSystemClipboard().setContent(content);
+
+    }
+
+    @FXML
+    public void filterMenuItemOnAction() {
+
+        try {
+            if (StringUtils.equals(fileFormatLabel.getText(), "QBP511CC")) {
+                showQbp511ccFilterScene();
+            } else {
+
+            }
+
+        } catch (IOException e) {
+
+            Alert a = new Alert(AlertType.ERROR);
+            a.setContentText("error occured with filter scene\n" + e.getMessage());
+            a.show();
+
+            String stacktrace = ExceptionUtils.getStackTrace(e);
+            System.err.println(stacktrace);
+
+        }
+    }
+
+    @FXML
+    public void settingsMenuItemOnAction() {
 
     }
 
@@ -237,21 +331,22 @@ public class MainSceneController {
     @FXML
     public void openMenuItemOnAction() {
 
-        File openFile = openFileChooser();
+        try {
+            File openFile = openFileChooser();
 
-        if (openFile != null) {
+            if (openFile != null) {
 
-            inputFile = openFile;
-            //System.out.println("AbsoluteFile = " + inputFile.getAbsoluteFile());
-            //System.out.println("AbsolutePath = " + inputFile.getAbsolutePath());
-            // System.out.println("Name         = " + inputFile.getName());
-            // System.out.println("path         = " + inputFile.getPath());
-            // System.out.println("parent       = " + inputFile.getParent());
-            // System.out.println("file format  = " + fileFormatLabel.getText());
+                inputFile = openFile;
+                //System.out.println("AbsoluteFile = " + inputFile.getAbsoluteFile());
+                //System.out.println("AbsolutePath = " + inputFile.getAbsolutePath());
+                //System.out.println("Name         = " + inputFile.getName());
+                //System.out.println("path         = " + inputFile.getPath());
+                //System.out.println("parent       = " + inputFile.getParent());
+                //System.out.println("file format  = " + fileFormatLabel.getText());
 
-            String formatTxt = fileFormatLabel.getText();
-            fileNameLabel.setText(inputFile.getName());
-            try {
+                String formatTxt = fileFormatLabel.getText();
+                fileNameLabel.setText(inputFile.getName());
+
                 if (StringUtils.equals(formatTxt, "QBP511CC")) {
                     readQBP511CC(inputFile);
                 } else if (StringUtils.equals(formatTxt, "QBP537CC")) {
@@ -262,21 +357,46 @@ public class MainSceneController {
                     readWMS320CC(inputFile);
                 }
 
-                totalRecCnt = fileRecordTTV.getExpandedItemCount();
+                Integer tiSize = fileTI.getChildren().size();
+                //System.out.println("tiSize = " + tiSize);
+                if (tiSize == 0) {
+                    totalRecCnt = 0;
+                } else {
+                    FileRecord fr = fileTI.getChildren()
+                            .get(tiSize - 1).getValue();
+                    totalRecCnt = fr.getRecNum();
+                }
+
                 filePositionLabel.setText("rec: 0 of " + totalRecCnt);
 
-            } catch (Exception e) {
-                fileNameLabel.setText("Error during open");
-                Alert a = new Alert(AlertType.ERROR);
-                a.setContentText("error occured opening file\n" + e.getMessage());
-                a.show();
+                if (StringUtils.equals(formatTxt, "QBP511CC")) {
+                    TreeItem<FileRecord> filteredTI = applyQbp511ccFilter();
+                    fileRecordTTV.setRoot(filteredTI);
+                } else {
+                    fileRecordTTV.setRoot(fileTI);
+                }
+
+                context.getIniHandler().setInitialDirectory(inputFile.getParent());
+
+                this.saveMenuItem.setDisable(false);
+
             }
-            this.saveMenuItem.setDisable(false);
+
+        } catch (Exception e) {
+            fileNameLabel.setText("Error during open");
+            Alert a = new Alert(AlertType.ERROR);
+            a.setContentText("error occured opening file\n" + e.getMessage());
+            a.show();
+
+            System.err.println(fileNameLabel.getText());
+            String stacktrace = ExceptionUtils.getStackTrace(e);
+            System.err.println(stacktrace);
+
         }
 
     }
 
-    private File openFileChooser() {
+    private File openFileChooser() throws IOException {
 
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Open File");
@@ -293,12 +413,15 @@ public class MainSceneController {
         if (filechoosen != null) {
             // clear out the last file opened
             saveMenuItem.setDisable(true);
+            filterMenuItem.setDisable(true);
             filePositionLabel.setText("");
             fileFormatLabel.setText("N/A");
             fileNameLabel.setText("N/A");
+            filterLabel.setText("");
             fileRecordTTV.getSelectionModel().clearSelection();
             fileRecordTTV.setRoot(null);
             totalRecCnt = 0;
+            qbp511ccFilter.clearLists();
 
             FileChooser.ExtensionFilter selectedExtensionFilter = chooser.getSelectedExtensionFilter();
             fileFormatLabel.setText(selectedExtensionFilter.getDescription());
@@ -309,12 +432,39 @@ public class MainSceneController {
 
     }
 
+    private void showQbp511ccFilterScene() throws IOException {
+
+        Stage filterStage = new Stage();
+        filterStage.initModality(Modality.WINDOW_MODAL);
+        filterStage.initOwner(context.getPrimaryStage());
+
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/dncs/fileView/filters/Qbp511ccFilterScene.fxml"));
+        AnchorPane filterPane = loader.load();
+
+        Qbp511ccFilterSceneController filterSceneController = loader.getController();
+        Scene filterScene = new Scene(filterPane);
+        filterSceneController.setStage(filterStage);
+        filterSceneController.initScene(qbp511ccFilter);
+
+        filterStage.setTitle("QBP511CC Filter");
+        filterStage.setWidth(375D);
+        filterStage.setHeight(400D);
+        filterStage.setScene(filterScene);
+
+        filterStage.showAndWait();
+
+        TreeItem<FileRecord> filteredTI = applyQbp511ccFilter();
+        fileRecordTTV.setRoot(filteredTI);
+
+    }
+
     private void readQBP511CC(File file) throws Exception {
 
         ReadQBP511CC rr = new ReadQBP511CC();
 
-        rr.processFile(file);
-        fileRecordTTV.setRoot(rr.getRootTI());
+        rr.processFile(file, this.qbp511ccFilter);
+        fileTI = rr.getRootTI();
+        this.filterMenuItem.setDisable(false);
 
     }
 
@@ -323,7 +473,7 @@ public class MainSceneController {
         ReadQBP537CC rr = new ReadQBP537CC();
 
         rr.processFile(file);
-        fileRecordTTV.setRoot(rr.getRootTI());
+        fileTI = rr.getRootTI();
 
     }
 
@@ -332,7 +482,7 @@ public class MainSceneController {
         ReadWMS302CC rr = new ReadWMS302CC();
 
         rr.processFile(file, 350);
-        fileRecordTTV.setRoot(rr.getRootTI());
+        fileTI = rr.getRootTI();
 
     }
 
@@ -341,18 +491,22 @@ public class MainSceneController {
         ReadWMS320CC rr = new ReadWMS320CC();
 
         rr.processFile(file, 500);
-        fileRecordTTV.setRoot(rr.getRootTI());
+        fileTI = rr.getRootTI();
 
     }
 
-    private String checkInitialDirectory() {
+    private String checkInitialDirectory() throws IOException {
 
-        String returnDir = "c:\\";
+        String returnDir = context.getIniValues().getInitialDirectory();
 
-        if (dirExist("c:\\testData")) {
+        if (dirExist(returnDir)) {
+            //continue;
+        } else if (dirExist("c:\\testData")) {
             returnDir = "c:\\testData";
         } else if (dirExist("h:\\")) {
             returnDir = "h:\\";
+        } else {
+            returnDir = "c:\\";
         }
 
         return returnDir;
@@ -372,6 +526,59 @@ public class MainSceneController {
         a.setHeaderText("File View " + context.getVersionNum());
         a.show();
 
+    }
+
+    private TreeItem<FileRecord> applyQbp511ccFilter() {
+
+        TreeItem<FileRecord> filteredTI = new TreeItem<>(new FileRecord());
+        Boolean addRecord;
+        for (TreeItem<FileRecord> frTI : fileTI.getChildren()) {
+            FileRecord fr = frTI.getValue();
+            addRecord = true;
+
+            //System.out.println("filter recNum = " + fr.getRecNum()
+            //        + " rec type = " + fr.getRecType()
+            //        + " invoice Id = " + fr.getInvoiceId()
+             //       + " item Id = " + fr.getItemId());
+
+            if (!StringUtils.equals(this.qbp511ccFilter.getSelectedRecTypes(), "All")) {
+                if (this.qbp511ccFilter.getRecTypeHM().containsKey(fr.getRecType())) {
+                    RecTypeFilter rtf = this.qbp511ccFilter.getRecTypeHM().get(fr.getRecType());
+                    if (!rtf.isSelected()) {
+                        addRecord = false;
+                    }
+                }
+            }
+
+            //System.out.println("addRecord = " + addRecord);
+            if (addRecord
+                    && !StringUtils.equals(this.qbp511ccFilter.getSelectedInvoice(), "All")
+                    && StringUtils.isNotBlank(fr.getInvoiceId())
+                    && !StringUtils.equals(fr.getInvoiceId(), this.qbp511ccFilter.getSelectedInvoice())) {
+                addRecord = false;
+            }
+
+            //System.out.println("addRecord = " + addRecord
+            //        + " filter item id = " + this.qbp511ccFilter.getSelectedItem()
+            //        + " itemId = " + fr.getItemId());
+            
+            if (addRecord
+                    && !StringUtils.equals(this.qbp511ccFilter.getSelectedItem(), "All")
+                    && StringUtils.isNotBlank(fr.getItemId())
+                    && !StringUtils.equals(fr.getItemId(), this.qbp511ccFilter.getSelectedItem())) {
+                addRecord = false;
+            }
+
+            //System.out.println("addRecord = " + addRecord);
+            if (addRecord) {
+                filteredTI.getChildren().add(frTI);
+            }
+        }
+        filterLabel.setText("Invoice : " + this.qbp511ccFilter.getSelectedInvoice()
+                + " | Item Id : " + this.qbp511ccFilter.getSelectedItem()
+                + " | Rec Type : " + this.qbp511ccFilter.getSelectedRecTypes());
+
+        return filteredTI;
     }
 
 }

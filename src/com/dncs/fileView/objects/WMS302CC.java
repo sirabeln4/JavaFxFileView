@@ -7,14 +7,14 @@ import javafx.collections.ObservableList;
 
 public class WMS302CC {
 	
-	private FileRecord fileRecord;
+	private final FileRecord fileRecord;
 	
 	private String frKey;
-	private StringBuilder frValue;
-	private ObservableList<FileField> fileFieldList;
+	private final StringBuilder frValue;
+	private final ObservableList<FileField> fileFieldList;
 	private Integer currentIndex;
 	
-	public WMS302CC(String hexString, String charString) throws Exception {
+	public WMS302CC(String hexString, String charString, Integer recNum) throws Exception {
 		super();
 		
 		String WMS302_FACL;
@@ -97,7 +97,9 @@ public class WMS302CC {
 			
 		frKey = WMS302_FACL + " / " + WMS302_WHSE + " / " + WMS302_ITEM_NUM + " / " + WMS302_EXP_DATE;
 		
-		this.fileRecord = new FileRecord(frKey, frValue.toString(), "", fileFieldList, hexString, charString);
+		this.fileRecord = new FileRecord(frKey, 
+                        frValue.toString(), "", fileFieldList, 
+                        hexString, charString, recNum, "", "","");
 		
 	}
 	

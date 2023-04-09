@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.ContextMenu?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
@@ -51,9 +52,19 @@
                 </Menu>
                 <Menu mnemonicParsing="false" text="Edit">
                   <items>
-                    <MenuItem disable="true" mnemonicParsing="false" text="Copy" />
+                    <MenuItem fx:id="copyMenuItem" disable="true" mnemonicParsing="false" onAction="#copyMenuItemOnAction" text="Copy">
+                           <accelerator>
+                              <KeyCodeCombination alt="UP" code="C" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                           </accelerator></MenuItem>
                   </items>
                 </Menu>
+                  <Menu mnemonicParsing="false" text="View">
+                    <items>
+                      <MenuItem fx:id="filterMenuItem" disable="true" mnemonicParsing="false" onAction="#filterMenuItemOnAction" text="Filter" />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <MenuItem disable="true" mnemonicParsing="false" onAction="#settingsMenuItemOnAction" text="Settings" />
+                    </items>
+                  </Menu>
                 <Menu mnemonicParsing="false" text="Help">
                   <items>
                     <MenuItem mnemonicParsing="false" onAction="#aboutMenuItemOnAction" text="About" />
@@ -78,6 +89,13 @@
                       <TableColumn fx:id="endPosTC" prefWidth="60.0" text="End pos" />
                         <TableColumn fx:id="keyLevelTC" prefWidth="40.0" text="Key" />
                     </columns>
+                     <contextMenu>
+                        <ContextMenu>
+                          <items>
+                            <MenuItem fx:id="copyContextMenuItem" mnemonicParsing="false" onAction="#copyMenuItemOnAction" text="Copy" />
+                          </items>
+                        </ContextMenu>
+                     </contextMenu>
                   </TableView>
                </items>
             </SplitPane>
@@ -104,6 +122,7 @@
                   <Separator orientation="VERTICAL" GridPane.columnIndex="3" />
                   <Label fx:id="fileNameLabel" text="N/A" GridPane.columnIndex="4" />
                   <Separator orientation="VERTICAL" GridPane.columnIndex="5" />
+                  <Label fx:id="filterLabel" GridPane.columnIndex="6" />
                   <Separator orientation="VERTICAL" GridPane.columnIndex="7" />
                   <Label fx:id="versionLabel" alignment="CENTER_RIGHT" text="V 1.0" GridPane.columnIndex="8" />
                </children>

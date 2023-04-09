@@ -6,6 +6,8 @@ import javafx.collections.ObservableList;
 
 public class FileRecord {
 
+    private Integer recNum;
+    private String  recType;
     private String fileKey;
     private String fileValue;
     private String compareValue;
@@ -15,6 +17,9 @@ public class FileRecord {
     private String hexData2;
     private String charData;
 
+    private final String invoiceId;
+    private final String itemId;
+    
     private ObservableList<FileField> fileFieldList;
 
     public FileRecord() {
@@ -27,10 +32,17 @@ public class FileRecord {
         this.hexData0 = "";
         this.hexData1 = "";
         this.hexData2 = "";
+        this.recNum = 0;
+        this.recType = "";
+        this.invoiceId = "";
+        this.itemId = "";
+        
     }
 
-    public FileRecord(String fileKey, String fileValue, String compareValue, ObservableList<FileField> fileFieldList,
-            String hexData, String charData) {
+    public FileRecord(String fileKey, String fileValue, String compareValue, 
+            ObservableList<FileField> fileFieldList,
+            String hexData, String charData, Integer recNum, String recType, 
+            String invoiceId, String itemId) {
         super();
         this.fileKey = fileKey;
         this.fileValue = fileValue;
@@ -38,7 +50,11 @@ public class FileRecord {
         this.fileFieldList = fileFieldList;
         this.charData = charData;
         this.hexData0 = hexData;
-
+        this.recNum = recNum;
+        this.recType = recType;
+        this.invoiceId = invoiceId;
+        this.itemId = itemId;
+        
         StringBuilder h1 = new StringBuilder();
         StringBuilder h2 = new StringBuilder();
 
@@ -112,6 +128,30 @@ public class FileRecord {
 
     public void setCharData(String charData) {
         this.charData = charData;
+    }
+
+    public Integer getRecNum() {
+        return recNum;
+    }
+
+    public void setRecNum(Integer recNum) {
+        this.recNum = recNum;
+    }
+
+    public String getRecType() {
+        return recType;
+    }
+
+    public void setRecType(String recType) {
+        this.recType = recType;
+    }
+
+    public String getInvoiceId() {
+        return invoiceId;
+    }
+
+    public String getItemId() {
+        return itemId;
     }
 
 }

@@ -1,5 +1,7 @@
 package com.dncs.fileView.objects;
 
+import com.dncs.fileView.filters.Qbp511ccFilter;
+import com.dncs.fileView.filters.Qbp511ccRT;
 import org.apache.commons.lang3.StringUtils;
 
 import javafx.collections.FXCollections;
@@ -11,6 +13,7 @@ public class QBP511CC {
     private FileRecord subRecFR;
 
     private Integer currentIndex;
+    private final Integer recNum;
 
     String fullHexString;
     String fullCharString;
@@ -675,12 +678,12 @@ public class QBP511CC {
     private String l10_QBP511_ITTX_SQNC_NBR;    //PIC S9(07) COMP-3.
     //*
 
-    public QBP511CC(String hexString, String charString) throws Exception {
+    public QBP511CC(String hexString, String charString, Integer recNum, Qbp511ccFilter qbp511ccFilter) throws Exception {
         super();
 
+        this.recNum = recNum;
         //System.out.println("charString len = " + charString.length()
         //        + " hexString len = " + hexString.length());
-
         this.fullHexString = hexString;
         this.fullCharString = charString;
 
@@ -795,78 +798,129 @@ public class QBP511CC {
         //        + "  key = " + l10_QBP511_KNVC_TYPE + l10_QBP511_KNVB_TYPE + l10_QBP511_KITM_TYPE + l10_QBP511_KITM_ITEM_EX_CD);
         // System.out.println();
         if (StringUtils.equals(l10_QBP511_KNVC_TYPE, "00")) {
-            //00 INVC - INVOICE MASTER DATA								LEVEL 1	467 BYTES
+            //00 INVC - INVOICE MASTER DATA					LEVEL 1	467 BYTES
             QBP511_INVC_DATA(dataHex, dataChar);
+            qbp511ccFilter.addToRecTypeCnt(Qbp511ccRT.INVC);
+            qbp511ccFilter.addInvoice(this.l10_QBP511_KNVC_IVNO);
         } else if (StringUtils.equals(l10_QBP511_KNVC_TYPE, "20")) {
-            //20 ICNT - CONTACTS FOR THE WAREHOUSE SHIP FROM ADDRESS	LEVEL 1 164 BYTES
+            //20 ICNT - CONTACTS FOR THE WAREHOUSE SHIP FROM ADDRESS	        LEVEL 1 164 BYTES
             QBP511_ICNT_DATA(dataChar);
+            qbp511ccFilter.addToRecTypeCnt(Qbp511ccRT.ICNT);
+            qbp511ccFilter.addInvoice(this.l10_QBP511_KNVC_IVNO);
         } else if (StringUtils.equals(l10_QBP511_KNVC_TYPE, "60")) {
-            //60 IMFE - INVOICE MASTER FEES								LEVEL 1  37 BYTES
+            //60 IMFE - INVOICE MASTER FEES					LEVEL 1  37 BYTES
             QBP511_IMFE_DATA(dataHex, dataChar);
+            qbp511ccFilter.addToRecTypeCnt(Qbp511ccRT.IMFE);
+            qbp511ccFilter.addInvoice(this.l10_QBP511_KNVC_IVNO);
         } else if (StringUtils.equals(l10_QBP511_KNVC_TYPE, "65")) {
-            //65 IMTF - INVOICE TOTAL FEES								LEVEL 1  37 BYTES
+            //65 IMTF - INVOICE TOTAL FEES					LEVEL 1  37 BYTES
             QBP511_IMTF_DATA(dataHex, dataChar);
+            qbp511ccFilter.addToRecTypeCnt(Qbp511ccRT.IMTF);
+            qbp511ccFilter.addInvoice(this.l10_QBP511_KNVC_IVNO);
         } else if (StringUtils.equals(l10_QBP511_KNVC_TYPE, "80")) {
-            //80 IMLI - LICENSE NUMBERS									LEVEL 1 360 BYTES
+            //80 IMLI - LICENSE NUMBERS						LEVEL 1 360 BYTES
             QBP511_IMLI_DATA(dataChar);
+            qbp511ccFilter.addToRecTypeCnt(Qbp511ccRT.IMLI);
+            qbp511ccFilter.addInvoice(this.l10_QBP511_KNVC_IVNO);
         } else if (StringUtils.equals(l10_QBP511_KNVC_TYPE, "85")) {
-            //85 IMLD - LICENSE DESC									LEVEL 1 462 BYTES
+            //85 IMLD - LICENSE DESC						LEVEL 1 462 BYTES
             QBP511_IMLD_DATA(dataChar);
+            qbp511ccFilter.addToRecTypeCnt(Qbp511ccRT.IMLD);
+            qbp511ccFilter.addInvoice(this.l10_QBP511_KNVC_IVNO);
         } else if (StringUtils.equals(l10_QBP511_KNVC_TYPE, "99")) {
-            //99 INVT - INVOICE TOTALS									LEVEL 1 193 BYTES
+            //99 INVT - INVOICE TOTALS						LEVEL 1 193 BYTES
             QBP511_INVT_DATA(dataHex, dataChar);
+            qbp511ccFilter.addToRecTypeCnt(Qbp511ccRT.INVT);
+            qbp511ccFilter.addInvoice(this.l10_QBP511_KNVC_IVNO);
         } else if (StringUtils.equals(l10_QBP511_KNVB_TYPE, "00")) {
-            //00 INVB - INVOICE BREAKER                                 LEVEL 2 134 BYTES
+            //00 INVB - INVOICE BREAKER                                         LEVEL 2 134 BYTES
             QBP511_INVB_DATA(dataChar);
+            qbp511ccFilter.addToRecTypeCnt(Qbp511ccRT.INVB);
         } else if (StringUtils.equals(l10_QBP511_KNVB_TYPE, "60")) {
-            //60 IBFE - INVOICE BREAKER FEES                            LEVEL 2  37 BYTES
+            //60 IBFE - INVOICE BREAKER FEES                                    LEVEL 2  37 BYTES
             QBP511_IBFE_DATA(dataHex, dataChar);
+            qbp511ccFilter.addToRecTypeCnt(Qbp511ccRT.IBFE);
         } else if (StringUtils.equals(l10_QBP511_KNVB_TYPE, "99")) {
-            //99 IVBT - INVOICE BREAK TOTALS                            LEVEL 2  58 BYTES     ?? LEVEL 2 134 BYTES
+            //99 IVBT - INVOICE BREAK TOTALS                                    LEVEL 2  58 BYTES     ?? LEVEL 2 134 BYTES
             QBP511_IVBT_DATA(dataHex, dataChar);
+            qbp511ccFilter.addToRecTypeCnt(Qbp511ccRT.IVBT);
         } else if (StringUtils.equals(l10_QBP511_KITM_TYPE, "00")
                 && StringUtils.equalsIgnoreCase(l10_QBP511_KITM_ITEM_EX_CD, "I")) {
-            //00 ITEM - INVOICE DETAIL                                  LEVEL3  478 BYTES
+            //00 ITEM - INVOICE DETAIL                                          LEVEL3  478 BYTES
             QBP511_ITEM_DATA(dataHex, dataChar);
+            qbp511ccFilter.addToRecTypeCnt(Qbp511ccRT.ITEM);
+            qbp511ccFilter.addItem(this.l10_QBP511_KNVC_IVNO,
+                    this.l10_QBP511_KITM_ITEM, this.l10_QBP511_KITM_DESC);
         } else if (StringUtils.equals(l10_QBP511_KITM_TYPE, "00")
                 && StringUtils.equalsIgnoreCase(l10_QBP511_KITM_ITEM_EX_CD, "E")) {
-            //00 ITEX - ITEM EXCEPTION                                 LEVEL3  478 BYTES
+            //00 ITEX - ITEM EXCEPTION                                          LEVEL3  478 BYTES
             QBP511_ITEX_DATA(dataHex, dataChar);
+            qbp511ccFilter.addToRecTypeCnt(Qbp511ccRT.ITEX);
+            qbp511ccFilter.addItem(this.l10_QBP511_KNVC_IVNO,
+                    this.l10_QBP511_KITM_ITEM, this.l10_QBP511_KITM_DESC);
         } else if (StringUtils.equals(l10_QBP511_KITM_TYPE, "10")) {
-            //10 ITOR - INVOICE DETAIL                                  LEVEL3  144 BYTES
+            //10 ITOR - INVOICE DETAIL                                          LEVEL3  144 BYTES
             QBP511_ITOR_DATA(dataHex, dataChar);
+            qbp511ccFilter.addToRecTypeCnt(Qbp511ccRT.ITOR);
+            qbp511ccFilter.addItem(this.l10_QBP511_KNVC_IVNO,
+                    this.l10_QBP511_KITM_ITEM, this.l10_QBP511_KITM_DESC);
         } else if (StringUtils.equals(l10_QBP511_KITM_TYPE, "20")) {
-            //20 ITAL - ITEM ALLOWANCES                                  LEVEL3  95 BYTES
+            //20 ITAL - ITEM ALLOWANCES                                         LEVEL3  95 BYTES
             QBP511_ITAL_DATA(dataHex, dataChar);
+            qbp511ccFilter.addToRecTypeCnt(Qbp511ccRT.ITAL);
+            qbp511ccFilter.addItem(this.l10_QBP511_KNVC_IVNO,
+                    this.l10_QBP511_KITM_ITEM, this.l10_QBP511_KITM_DESC);
         } else if (StringUtils.equals(l10_QBP511_KITM_TYPE, "22")) {
-            //22 IRTB - ITEM REBATES                                    LEVEL3 
+            //22 IRTB - ITEM REBATES                                            LEVEL3 
             QBP511_IRTB_DATA(dataHex, dataChar);
+            qbp511ccFilter.addToRecTypeCnt(Qbp511ccRT.IRBT);
+            qbp511ccFilter.addItem(this.l10_QBP511_KNVC_IVNO,
+                    this.l10_QBP511_KITM_ITEM, this.l10_QBP511_KITM_DESC);
         } else if (StringUtils.equals(l10_QBP511_KITM_TYPE, "30")) {
-            //30 ITSC - SHIPPER COMPONENTS                                LEVEL3  74 BYTES
+            //30 ITSC - SHIPPER COMPONENTS                                      LEVEL3  74 BYTES
             QBP511_ITSC_DATA(dataHex, dataChar);
+            qbp511ccFilter.addToRecTypeCnt(Qbp511ccRT.ITSC);
+            qbp511ccFilter.addItem(this.l10_QBP511_KNVC_IVNO,
+                    this.l10_QBP511_KITM_ITEM, this.l10_QBP511_KITM_DESC);
         } else if (StringUtils.equals(l10_QBP511_KITM_TYPE, "40")) {
-            //40 ITWT - RANDOM WEIGHTS                                    LEVEL3  15 BYTES
+            //40 ITWT - RANDOM WEIGHTS                                          LEVEL3  15 BYTES
             QBP511_ITWT_DATA(dataHex);
+            qbp511ccFilter.addToRecTypeCnt(Qbp511ccRT.ITWT);
+            qbp511ccFilter.addItem(this.l10_QBP511_KNVC_IVNO,
+                    this.l10_QBP511_KITM_ITEM, this.l10_QBP511_KITM_DESC);
         } else if (StringUtils.equals(l10_QBP511_KITM_TYPE, "50")) {
-            //50 ITND - NDC CODES                                       LEVEL3  61 BYTES
+            //50 ITND - NDC CODES                                               LEVEL3  61 BYTES
             QBP511_ITND_DATA(dataHex, dataChar);
+            qbp511ccFilter.addToRecTypeCnt(Qbp511ccRT.ITND);
+            qbp511ccFilter.addItem(this.l10_QBP511_KNVC_IVNO,
+                    this.l10_QBP511_KITM_ITEM, this.l10_QBP511_KITM_DESC);
         } else if (StringUtils.equals(l10_QBP511_KITM_TYPE, "60")) {
-            //60 ITFE - NDC CODES                                       LEVEL3  41 BYTES
+            //60 ITFE - NDC CODES                                               LEVEL3  41 BYTES
             QBP511_ITFE_DATA(dataHex, dataChar);
+            qbp511ccFilter.addToRecTypeCnt(Qbp511ccRT.ITFE);
+            qbp511ccFilter.addItem(this.l10_QBP511_KNVC_IVNO,
+                    this.l10_QBP511_KITM_ITEM, this.l10_QBP511_KITM_DESC);
         } else if (StringUtils.equals(l10_QBP511_KITM_TYPE, "70")) {
-            //70 ITTX - ITEM TAXES                                       LEVEL3  25 BYTES
+            //70 ITTX - ITEM TAXES                                              LEVEL3  25 BYTES
             QBP511_ITTX_DATA(dataHex, dataChar);
+            qbp511ccFilter.addToRecTypeCnt(Qbp511ccRT.ITTX);
+            qbp511ccFilter.addItem(this.l10_QBP511_KNVC_IVNO,
+                    this.l10_QBP511_KITM_ITEM, this.l10_QBP511_KITM_DESC);
         } else {
             this.fullFileFieldList = FXCollections.observableArrayList();
             currentIndex = 1;
             this.fullLevelKey();
-            this.fullFileFieldList.add(buildFileField("l10_QBP511_DATA_LENGTH", this.l10_QBP511_DATA_LENGTH.toString(), 2, "9(04) COMP"));
-            
+            this.fullFileFieldList.add(buildFileField("l10_QBP511_DATA_LENGTH",
+                    this.l10_QBP511_DATA_LENGTH.toString(), 2, "9(04) COMP"));
+
             String frKey = "L? - unknown rec type";
             String frValue = this.frValueLevel1();
-            
+
             this.subRecFR = new FileRecord(frKey, frValue, "",
-                this.fullFileFieldList, this.fullHexString, this.fullCharString);
+                    this.fullFileFieldList, this.fullHexString,
+                    this.fullCharString, this.recNum, "UNKNOWN",
+                    this.l10_QBP511_KNVC_IVNO, "");
+            qbp511ccFilter.addToRecTypeCnt(Qbp511ccRT.UNKNOWN);
         }
 
     }
@@ -945,7 +999,9 @@ public class QBP511CC {
         String frValue = this.frValueLevel1();
 
         this.subRecFR = new FileRecord(frKey, frValue, "",
-                this.fullFileFieldList, this.fullHexString, this.fullCharString);
+                this.fullFileFieldList, this.fullHexString,
+                this.fullCharString, this.recNum, "INVC",
+                this.l10_QBP511_KNVC_IVNO, "");
 
     }
 
@@ -974,7 +1030,9 @@ public class QBP511CC {
         String frValue = this.frValueLevel1();
 
         this.subRecFR = new FileRecord(frKey, frValue, "",
-                this.fullFileFieldList, this.fullHexString, this.fullCharString);
+                this.fullFileFieldList, this.fullHexString,
+                this.fullCharString, this.recNum, "ICNT",
+                this.l10_QBP511_KNVC_IVNO, "");
 
     }
 
@@ -1000,7 +1058,10 @@ public class QBP511CC {
         String frKey = "L1 - 60 IMFE - INVOICE MASTER FEES";
         String frValue = this.frValueLevel1();
 
-        this.subRecFR = new FileRecord(frKey, frValue, "", this.fullFileFieldList, this.fullHexString, this.fullCharString);
+        this.subRecFR = new FileRecord(frKey, frValue, "",
+                this.fullFileFieldList, this.fullHexString,
+                this.fullCharString, this.recNum, "IMFE",
+                this.l10_QBP511_KNVC_IVNO, "");
 
     }
 
@@ -1026,7 +1087,9 @@ public class QBP511CC {
         String frValue = this.frValueLevel1();
 
         this.subRecFR = new FileRecord(frKey, frValue, "",
-                this.fullFileFieldList, this.fullHexString, this.fullCharString);
+                this.fullFileFieldList, this.fullHexString,
+                this.fullCharString, this.recNum, "IMTF",
+                this.l10_QBP511_KNVC_IVNO, "");
 
     }
 
@@ -1128,7 +1191,9 @@ public class QBP511CC {
         String frValue = this.frValueLevel1();
 
         this.subRecFR = new FileRecord(frKey, frValue, "",
-                this.fullFileFieldList, this.fullHexString, this.fullCharString);
+                this.fullFileFieldList, this.fullHexString,
+                this.fullCharString, this.recNum, "IMLI",
+                this.l10_QBP511_KNVC_IVNO, "");
 
     }
 
@@ -1203,7 +1268,9 @@ public class QBP511CC {
         String frValue = this.frValueLevel1();
 
         this.subRecFR = new FileRecord(frKey, frValue, "",
-                this.fullFileFieldList, this.fullHexString, this.fullCharString);
+                this.fullFileFieldList, this.fullHexString,
+                this.fullCharString, this.recNum, "IMLD",
+                this.l10_QBP511_KNVC_IVNO, "");
 
     }
 
@@ -1300,7 +1367,9 @@ public class QBP511CC {
         String frValue = this.frValueLevel1();
 
         this.subRecFR = new FileRecord(frKey, frValue, "",
-                this.fullFileFieldList, this.fullHexString, this.fullCharString);
+                this.fullFileFieldList, this.fullHexString,
+                this.fullCharString, this.recNum, "INVT",
+                this.l10_QBP511_KNVC_IVNO, "");
     }
 
     private void QBP511_INVB_DATA(String dataChar) {
@@ -1349,7 +1418,10 @@ public class QBP511CC {
         String frKey = "L2 - 00 INVB - INVOICE BREAKER";
         String frValue = this.frValueLevel2();
 
-        this.subRecFR = new FileRecord(frKey, frValue, "", this.fullFileFieldList, this.fullHexString, this.fullCharString);
+        this.subRecFR = new FileRecord(frKey, frValue, "",
+                this.fullFileFieldList, this.fullHexString,
+                this.fullCharString, this.recNum, "INVB",
+                this.l10_QBP511_KNVC_IVNO, "");
 
     }
 
@@ -1373,7 +1445,10 @@ public class QBP511CC {
         String frKey = "L2 - 60 IBFE - INVOICE BREAKER FEES";
         String frValue = this.frValueLevel2();
 
-        this.subRecFR = new FileRecord(frKey, frValue, "", this.fullFileFieldList, this.fullHexString, this.fullCharString);
+        this.subRecFR = new FileRecord(frKey, frValue, "",
+                this.fullFileFieldList, this.fullHexString,
+                this.fullCharString, this.recNum, "IBFE",
+                this.l10_QBP511_KNVC_IVNO, "");
     }
 
     private void QBP511_IVBT_DATA(String dataHex, String dataChar) {
@@ -1404,7 +1479,10 @@ public class QBP511CC {
         String frKey = "L2 - 99 IVBT - INVOICE BREAK TOTALS";
         String frValue = this.frValueLevel2();
 
-        this.subRecFR = new FileRecord(frKey, frValue, "", this.fullFileFieldList, this.fullHexString, this.fullCharString);
+        this.subRecFR = new FileRecord(frKey, frValue, "",
+                this.fullFileFieldList, this.fullHexString,
+                this.fullCharString, this.recNum, "IVBT",
+                this.l10_QBP511_KNVC_IVNO, "");
     }
 
     private void QBP511_ITEM_DATA(String dataHex, String dataChar) {
@@ -1606,7 +1684,10 @@ public class QBP511CC {
         String frKey = "L3 - 00 ITEM - INVOICE DETAIL";
         String frValue = this.frValueLevel3();
 
-        this.subRecFR = new FileRecord(frKey, frValue, "", this.fullFileFieldList, this.fullHexString, this.fullCharString);
+        this.subRecFR = new FileRecord(frKey, frValue, "",
+                this.fullFileFieldList, this.fullHexString,
+                this.fullCharString, this.recNum, "ITEM",
+                this.l10_QBP511_KNVC_IVNO, this.l10_QBP511_KITM_ITEM);
 
     }
 
@@ -1777,7 +1858,10 @@ public class QBP511CC {
         String frKey = "L3 - 00 ITEX - ITEM EXCEPTION";
         String frValue = this.frValueLevel3();
 
-        this.subRecFR = new FileRecord(frKey, frValue, "", this.fullFileFieldList, this.fullHexString, this.fullCharString);
+        this.subRecFR = new FileRecord(frKey, frValue, "",
+                this.fullFileFieldList, this.fullHexString,
+                this.fullCharString, this.recNum, "ITEX",
+                this.l10_QBP511_KNVC_IVNO, this.l10_QBP511_KITM_ITEM);
 
     }
 
@@ -1827,7 +1911,10 @@ public class QBP511CC {
         String frKey = "L3 - 10 ITOR - ORIGINAL OF SUB";
         String frValue = this.frValueLevel3();
 
-        this.subRecFR = new FileRecord(frKey, frValue, "", this.fullFileFieldList, this.fullHexString, this.fullCharString);
+        this.subRecFR = new FileRecord(frKey, frValue, "",
+                this.fullFileFieldList, this.fullHexString,
+                this.fullCharString, this.recNum, "ITOR",
+                this.l10_QBP511_KNVC_IVNO, this.l10_QBP511_KITM_ITEM);
 
     }
 
@@ -1889,7 +1976,10 @@ public class QBP511CC {
         String frKey = "L3 - 20 ITAL - ITEM ALLOWANCES";
         String frValue = this.frValueLevel3();
 
-        this.subRecFR = new FileRecord(frKey, frValue, "", this.fullFileFieldList, this.fullHexString, this.fullCharString);
+        this.subRecFR = new FileRecord(frKey, frValue, "",
+                this.fullFileFieldList, this.fullHexString,
+                this.fullCharString, this.recNum, "ITAL",
+                this.l10_QBP511_KNVC_IVNO, this.l10_QBP511_KITM_ITEM);
 
     }
 
@@ -1916,7 +2006,9 @@ public class QBP511CC {
         String frValue = this.frValueLevel3();
 
         this.subRecFR = new FileRecord(frKey, frValue, "",
-                this.fullFileFieldList, this.fullHexString, this.fullCharString);
+                this.fullFileFieldList, this.fullHexString,
+                this.fullCharString, this.recNum, "IRBT",
+                this.l10_QBP511_KNVC_IVNO, this.l10_QBP511_KITM_ITEM);
 
     }
 
@@ -1955,7 +2047,9 @@ public class QBP511CC {
         String frValue = this.frValueLevel3();
 
         this.subRecFR = new FileRecord(frKey, frValue, "",
-                this.fullFileFieldList, this.fullHexString, this.fullCharString);
+                this.fullFileFieldList, this.fullHexString,
+                this.fullCharString, this.recNum, "ITSC",
+                this.l10_QBP511_KNVC_IVNO, this.l10_QBP511_KITM_ITEM);
 
     }
 
@@ -1982,7 +2076,9 @@ public class QBP511CC {
         String frValue = this.frValueLevel3();
 
         this.subRecFR = new FileRecord(frKey, frValue, "",
-                this.fullFileFieldList, this.fullHexString, this.fullCharString);
+                this.fullFileFieldList, this.fullHexString,
+                this.fullCharString, this.recNum, "ITWT",
+                this.l10_QBP511_KNVC_IVNO, this.l10_QBP511_KITM_ITEM);
 
     }
 
@@ -2015,7 +2111,9 @@ public class QBP511CC {
         String frValue = this.frValueLevel3();
 
         this.subRecFR = new FileRecord(frKey, frValue, "",
-                this.fullFileFieldList, this.fullHexString, this.fullCharString);
+                this.fullFileFieldList, this.fullHexString,
+                this.fullCharString, this.recNum, "ITND",
+                this.l10_QBP511_KNVC_IVNO, this.l10_QBP511_KITM_ITEM);
 
     }
 
@@ -2042,7 +2140,9 @@ public class QBP511CC {
         String frValue = this.frValueLevel3();
 
         this.subRecFR = new FileRecord(frKey, frValue, "",
-                this.fullFileFieldList, this.fullHexString, this.fullCharString);
+                this.fullFileFieldList, this.fullHexString,
+                this.fullCharString, this.recNum, "ITFE",
+                this.l10_QBP511_KNVC_IVNO, this.l10_QBP511_KITM_ITEM);
 
     }
 
@@ -2081,7 +2181,9 @@ public class QBP511CC {
         String frValue = this.frValueLevel3();
 
         this.subRecFR = new FileRecord(frKey, frValue, "",
-                this.fullFileFieldList, this.fullHexString, this.fullCharString);
+                this.fullFileFieldList, this.fullHexString,
+                this.fullCharString, this.recNum, "ITTX",
+                this.l10_QBP511_KNVC_IVNO, this.l10_QBP511_KITM_ITEM);
 
     }
 
@@ -2312,7 +2414,7 @@ public class QBP511CC {
 
         return new FileField(nameTxt, recTypeValue, picTxt, startPos, endPos);
     }
-    
+
     public FileRecord getLevelFR() {
         return levelFR;
     }
