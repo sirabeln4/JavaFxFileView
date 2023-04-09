@@ -17,8 +17,11 @@ public class ReadQBP537CC {
     private BufferedInputStream reader;
     private Boolean eof;
 
+    private Integer recNum;
+    
     public void processFile(File file) throws Exception {
 
+        recNum = 1;
         FileInputStream fis;
         rootTI = new TreeItem<>(new FileRecord());
 
@@ -73,7 +76,7 @@ public class ReadQBP537CC {
         String charRecord = StringUtils.rightPad(charSB.toString(), lrecl);
         String hexRecord = StringUtils.rightPad(hexSB.toString(), lrecl * 2, "00");
 
-        QBP537CC qbp537CC = new QBP537CC(hexRecord, charRecord);
+        QBP537CC qbp537CC = new QBP537CC(hexRecord, charRecord, recNum++);
 
         this.rootTI.getChildren().add(new TreeItem<>(qbp537CC.getFileRecord()));
 

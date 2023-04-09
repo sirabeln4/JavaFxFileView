@@ -8,8 +8,11 @@
   </information>
   <resources>
     <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
-    <jar href="JavaFxFileView.jar" size="65291" download="eager" />
+    <jar href="JavaFxFileView.jar" size="81390" download="eager" />
     <jar href="lib\commons-lang3-3.12.0.jar" size="587402" download="eager" />
+    <jar href="lib\jackson-annotations-2.15.0-rc2.jar" size="75551" download="eager" />
+    <jar href="lib\jackson-core-2.15.0-rc2.jar" size="542243" download="eager" />
+    <jar href="lib\jackson-databind-2.15.0-rc2.jar" size="1618840" download="eager" />
   </resources>
   <jfx:javafx-desc  width="800" height="600" main-class="com.dncs.fileView.main.Main"  name="JavaFxFileView" />
   <update check="always"/>

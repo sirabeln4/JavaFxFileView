@@ -4,8 +4,6 @@ import org.apache.commons.lang3.StringUtils;
 
 public class FileField {
 
-    private final Integer num;
-    private final String nameTxt;
     private final String picClauseTxt;
     private final Integer startPos;
     private final Integer endPos;
@@ -21,18 +19,14 @@ public class FileField {
     public FileField(String nameTxt, String recTypeValue, String picTxt, Integer startPos, Integer endPos, String keyLevel) {
         super();
 
-        Integer tempnum = 05;
         String tempName = nameTxt;
 
         String tempnumtxt = StringUtils.substring(nameTxt, 1, 3);
-        //System.out.println(tempnumtxt);
         if (StringUtils.isNumeric(tempnumtxt)) {
-            tempnum = Integer.valueOf(tempnumtxt);
+            //tempnum = Integer.valueOf(tempnumtxt);
             tempName = StringUtils.substring(nameTxt, 4);
         }
 
-        this.num = tempnum;
-        this.nameTxt = tempName;
         this.picClauseTxt = picTxt;
         this.startPos = startPos;
         this.endPos = endPos;
@@ -42,7 +36,8 @@ public class FileField {
         this.displayField = true;
         this.recTypeValue = recTypeValue;
 
-        this.fieldNameTxt = tempName;
+        this.fieldNameTxt = StringUtils.replace(tempName, 
+                "_", "-");
         this.fieldValueTxt = recTypeValue;
 
     }
@@ -50,18 +45,13 @@ public class FileField {
     public FileField(String nameTxt, String recTypeValue, String picTxt, Integer startPos, Integer endPos) {
         super();
 
-        Integer tempnum = 05;
         String tempName = nameTxt;
 
         String tempnumtxt = StringUtils.substring(nameTxt, 1, 3);
-        //System.out.println(tempnumtxt);
         if (StringUtils.isNumeric(tempnumtxt)) {
-            tempnum = Integer.valueOf(tempnumtxt);
             tempName = StringUtils.substring(nameTxt, 4);
         }
 
-        this.num = tempnum;
-        this.nameTxt = tempName;
         this.picClauseTxt = picTxt;
         this.startPos = startPos;
         this.endPos = endPos;
@@ -71,26 +61,8 @@ public class FileField {
         this.displayField = true;
         this.recTypeValue = recTypeValue;
 
-        this.fieldNameTxt = tempName;
-        this.fieldValueTxt = recTypeValue;
-
-    }
-
-    public FileField(Integer num, String nameTxt, String picTxt, Integer startPos, Integer endPos, Boolean keyField,
-            Boolean displayField, String recTypeValue) {
-        super();
-
-        this.num = num;
-        this.nameTxt = nameTxt;
-        this.picClauseTxt = picTxt;
-        this.startPos = startPos;
-        this.endPos = endPos;
-        this.keyLevel = "";
-        this.keyField = keyField;
-        this.displayField = displayField;
-        this.recTypeValue = recTypeValue;
-
-        this.fieldNameTxt = nameTxt;
+        this.fieldNameTxt = StringUtils.replace(tempName,
+                "_", "-");
         this.fieldValueTxt = recTypeValue;
 
     }
@@ -117,14 +89,6 @@ public class FileField {
 
     public void setRecTypeValue(String recTypeValue) {
         this.recTypeValue = recTypeValue;
-    }
-
-    public Integer getNum() {
-        return num;
-    }
-
-    public String getNameTxt() {
-        return nameTxt;
     }
 
     public String getPicTxt() {

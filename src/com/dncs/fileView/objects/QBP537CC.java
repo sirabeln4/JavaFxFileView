@@ -14,9 +14,9 @@ public class QBP537CC {
     private final ObservableList<FileField> fileFieldList;
     private Integer currentIndex;
 
-    public QBP537CC(String hexString, String charString) throws Exception {
+    public QBP537CC(String hexString, String charString, Integer recNum) throws Exception {
         super();
-
+        
         frKey = "";
         frValue = new StringBuilder();
         fileFieldList = FXCollections.observableArrayList();
@@ -32,9 +32,7 @@ public class QBP537CC {
         fileFieldList.add(new FileField("l10-QBP537-ORDER-NUMBER", subString(charString, 5), "X(05)", 14, 18));
         fileFieldList.add(new FileField("l10-QBP537-EQUITY-NUMBER", subStringComp3(hexString, 3, 5, 0, false), "S9(5) COMP-3", 19, 21));
 
-        String dealCntrTxt = subStringComp3(hexString, 2, 3, 0, false);
-        Integer dealCntr = Integer.valueOf(dealCntrTxt);
-        fileFieldList.add(new FileField("l10-QBP537-DEAL-CNTR", dealCntrTxt, "S9(03) COMP-3", 22, 23));
+        fileFieldList.add(new FileField("l10-QBP537-DEAL-CNTR", subStringComp3(hexString, 2, 3, 0, false), "S9(03) COMP-3", 22, 23));
         fileFieldList.add(new FileField("l10-QBP53-RWI-CASE-SELL", subStringComp3(hexString, 4, 3, 4, true), "S9(3)V9(4) COMP-3", 24, 27));
         fileFieldList.add(new FileField("l10-FILLER", subString(charString, 5), "X(05)", 28, 32));
 
@@ -42,30 +40,24 @@ public class QBP537CC {
             frValue.append(fileFieldList.get(i).getRecTypeValue()).append("|");
         }
 
-        String displayValueTxt = "";
+        //String displayValueTxt = "";
         if (StringUtils.equals(recType, "D")) {
             frKey = "Detail";
-            displayValueTxt = dtlRec(hexString, charString);
+            dtlRec(hexString, charString);
         } else if (StringUtils.equals(recType, "S")) {
             frKey = "Shipper Component";
-            displayValueTxt = shpRec(hexString, charString);
+            shpRec(hexString, charString);
         } else if (StringUtils.equals(recType, "T")) {
             frKey = "Total Record";
-            displayValueTxt = totRec(hexString, charString);
+            totRec(hexString, charString);
         }
-
-        for (int i = 0; i < dealCntr; i++) {
-            displayValueTxt += dealRecArea(hexString, charString);
-        }
-
-        this.fileRecord = new FileRecord(frKey, frValue.toString(), "", fileFieldList, hexString, charString);
-
-        //System.out.print(displayValueTxt);
-        //System.out.println("");
+        
+        this.fileRecord = new FileRecord(frKey, frValue.toString(), "",
+                fileFieldList, hexString, charString, recNum, frKey, "","");
 
     }
 
-    private String dtlRec(String dataHex, String dataChar) {
+    private void dtlRec(String dataHex, String dataChar) {
 
         fileFieldList.add(new FileField("l05-QBP537-ITEM-DATA", "", "", 33, 310));
 
@@ -92,7 +84,7 @@ public class QBP537CC {
 
         String itemCodeOrd = subStringComp3(dataHex, 4, 7, 0, false);
         String itemChkDigitOrd = subStringComp3(dataHex, 1, 1, 0, false);
-        String item = itemCodeOrd + itemChkDigitOrd;
+        //String item = itemCodeOrd + itemChkDigitOrd;
         fileFieldList.add(new FileField("l10-QBP537-ITEM-CODE-ORD", itemCodeOrd, "S9(7) COMP-3", 132, 135));
         fileFieldList.add(new FileField("l10-QBP537-ITEM-CHK-DIGIT-ORD", itemChkDigitOrd, "S9 COMP-3", 136, 136));
 
@@ -131,11 +123,11 @@ public class QBP537CC {
         fileFieldList.add(new FileField("l10-QBP537-ORDER-TYPE", subString(dataChar, 2), "X(02)", 304, 305));
         fileFieldList.add(new FileField("l10-QBP537-ITEM-NET-SELL", subStringComp3(dataHex, 5, 5, 4, true), "S9(5)V9(4) COMP-3", 306, 310));
 
-        return "D|" + item + "|" + desc + "|" + bioEng + "|" + tprFl + "|" + kitmShpFl;
+        //return "D|" + item + "|" + desc + "|" + bioEng + "|" + tprFl + "|" + kitmShpFl;
 
     }
 
-    private String shpRec(String dataHex, String dataChar) {
+    private void shpRec(String dataHex, String dataChar) {
 
         fileFieldList.add(new FileField("l05-QBP537-SHIPPER-COMPONENT", "", "", 33, 310));
         fileFieldList.add(new FileField("l10-FILLER", "", "X(8)", 33, 41));
@@ -168,11 +160,11 @@ public class QBP537CC {
         fileFieldList.add(new FileField("l10-FILLER", "", "X(142)", 169, 310));
         currentIndex += 142;
 
-        return "S| " + item + "|" + desc + "|" + bioEng + "|" + tprFl;
+        //return "S| " + item + "|" + desc + "|" + bioEng + "|" + tprFl;
 
     }
 
-    private String totRec(String dataHex, String dataChar) {
+    private void totRec(String dataHex, String dataChar) {
 
         fileFieldList.add(new FileField("l05-QBP537-TOTAL-ACCUM-FIELDS", "", "", 33, 310));
         fileFieldList.add(new FileField("l10-FILLER", "", "X(1)", 33, 33));
@@ -191,28 +183,7 @@ public class QBP537CC {
         fileFieldList.add(new FileField("l10-FILLER", "", "X(235)", 76, 310));
         currentIndex += 235;
 
-        return "";
-
-    }
-
-    private String dealRecArea(String dataHex, String dataChar) {
-
-        Integer curIndex = currentIndex;
-
-        fileFieldList.add(new FileField("l10-QBP537-SALE-DEAL-CODES", "", "", curIndex + 1, curIndex + 25));
-
-        fileFieldList.add(new FileField("l15-QBP537-OFFER-CD", subString(dataChar, 7), "X(07)", curIndex + 1, curIndex + 7));
-        fileFieldList.add(new FileField("l15-QBP537-DEAL-TYPE", subString(dataChar, 1), "X(01)", curIndex + 8, curIndex + 8));
-        fileFieldList.add(new FileField("l15-QBP537-PROMOTION-PROGRAM", subString(dataChar, 1), "X(01)", curIndex + 9, curIndex + 9));
-        fileFieldList.add(new FileField("l15-QBP537-START-DT", subStringComp(dataHex, 4), "9(08) COMP", curIndex + 10, curIndex + 13));
-        fileFieldList.add(new FileField("l15-QBP537-END-DT", subStringComp(dataHex, 4), "9(08) COMP", curIndex + 14, curIndex + 17));
-        fileFieldList.add(new FileField("l15-QBP537-TYPE-EXPENSE", subString(dataChar, 1), "X(01)", curIndex + 18, curIndex + 18));
-        fileFieldList.add(new FileField("l10-QBP537-DEAL-AMOUNT", subStringComp3(dataHex, 4, 5, 2, true), "S9(5)V99 COMP-3", curIndex + 19, curIndex + 22));
-        fileFieldList.add(new FileField("l15-QBP537-PROMO-ID", subString(dataChar, 3), "X(03)", curIndex + 23, curIndex + 25));
-
-        //System.out.println(" ci = " + curIndex + "  ci = " + currentIndex);
-
-        return "";
+        //return "";
 
     }
 
@@ -226,18 +197,18 @@ public class QBP537CC {
 
     }
 
-    private String subStringComp(String hexString, Integer length) {
-
-        Integer startIndex = currentIndex * 2;
-        currentIndex = currentIndex + length;
-        Integer endIndex = startIndex + (length * 2);
-        String hexValue = StringUtils.substring(hexString, startIndex, endIndex);
-        
-        Integer intValue = Integer.valueOf(hexValue, 16);
-
-        return intValue.toString();
-
-    }
+    //private String subStringComp(String hexString, Integer length) {
+    //
+    //    Integer startIndex = currentIndex * 2;
+    //    currentIndex = currentIndex + length;
+    //    Integer endIndex = startIndex + (length * 2);
+    //    String hexValue = StringUtils.substring(hexString, startIndex, endIndex);
+    //
+    //    Integer intValue = Integer.valueOf(hexValue, 16);
+    //
+    //    return intValue.toString();
+    //
+    //}
 
     private String subStringComp3(String hexString, Integer length, Integer intLength, Integer decLength, Boolean signed) {
 
